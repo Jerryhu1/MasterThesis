@@ -1,26 +1,30 @@
 package services
 
-import models.Bar
-import org.jfugue.theory._
+import models.{Bar, Note}
 
 class FitnessService
 object FitnessService {
   val CMajorScale = List(
-    new Note("C5"),
-    new Note("D5"),
-    new Note("E5"),
-    new Note("F5"),
-    new Note("G5"),
-    new Note("A6"),
-    new Note("B7")
+    Note.fromNoteString("C5", 0.125),
+    Note.fromNoteString("D5", 0.125),
+    Note.fromNoteString("E5", 0.125),
+    Note.fromNoteString("F5", 0.125),
+    Note.fromNoteString("G5", 0.125),
+    Note.fromNoteString("A5", 0.125),
+    Note.fromNoteString("B5", 0.125),
+
   )
   def getFitness(bar: Bar): Int ={
     //Switch case for fitness method
 
     var fitness = 0
 
-    for(note <- bar.pattern.get){
-
+    for(note <- bar.notes){
+      if(CMajorScale.map(x => x.note).contains(note.note)){
+        fitness += 1
+      }
     }
+
+    fitness
   }
 }
