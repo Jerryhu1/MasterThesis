@@ -6,8 +6,8 @@ import org.jfugue.player._
 object Main {
 
   def main(args: Array[String]) = {
-    val alg = new GeneticAlgorithm()
-    alg.run(5, 1)
+    val alg = new GeneticAlgorithm(1000, 1000)
+    alg.run()
 
 //    try{
 //      val sequencer = MidiSystem.getSequencer()
