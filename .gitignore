@@ -76,3 +76,7 @@ project/plugins/project/
 .history
 .cache
 .lib/
+
+*/.Rhistory
+*/.RData
+*/midi-files
