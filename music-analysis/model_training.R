@@ -1,9 +1,11 @@
-install.packages("tuneR")
+#install.packages("tuneR")
+#install.packages("markovchain")
 library(tuneR)
+library(markovchain)
 
-#setwd("B://Projects//MasterThesis//music-analysis")
-setwd("C://School//Master//Thesis//Programming//MasterThesis//music-analysis")
-song <- readMidi("chopin-no2.mid")
+setwd("B://School//Master//Thesis//MasterThesis//music-analysis")
+#setwd("C://School//Master//Thesis//Programming//MasterThesis//music-analysis")
+song <- readMidi("midi//chopin-no2.mid")
 midi_notes <- read.csv("midi-notes.csv")
 
 
@@ -26,7 +28,7 @@ track1_note_frequency <- matrix(rep(0, length(midi_notes)), nrow=1, ncol=length(
 colnames(track1_note_frequency) <- midi_notes$notes
 #Fill up frequency vector
 for(i in 1:length(notes_track1)){
-  curr <- notes_track1[i]
+  curr <- toString(notes_track1[i])
   track1_note_frequency[curr] <- track1_note_frequency[curr] + 1
 }
 
@@ -39,8 +41,8 @@ dimnames(transition_matrix) <- list(midi_notes$notes, midi_notes$notes)
 for(i in 1:length(notes_track1)){
   if(i == 1){next;}
   
-  prev <- notes_track1[i-1]
-  curr <- notes_track1[i]
+  prev <- toString(notes_track1[i-1])
+  curr <- toString(notes_track1[i])
   
   transition_matrix[curr,prev] <- transition_matrix[curr,prev] + 1
 }
@@ -48,11 +50,18 @@ for(i in 1:length(notes_track1)){
 #Divide by univariate frequency to get probabilities
 transition_matrix <- t(t(transition_matrix) / track1_note_frequency[1,])
 
+# Runs the model training given corpus 
+run <- function(corpus){
+  midi_notes <- read.csv("midi-notes.csv")
+  possibleNotes <- midi_notes$notes
+  corpusNotes <- getNotesForCorpus(corpus, midi_notes)
+  return (train.transitionMatrix(corpusNotes, midi_notes))
+}
 
 
 #Trains a transition matrix given a corpus and all possible notes. 
 train.transitionMatrix <- function(corpus, possibleNotes){
-  
+    
   transition_matrix <- matrix(rep(0,length(possibleNotes)*length(possibleNotes)), nrow=length(possibleNotes), ncol=length(possibleNotes))
   dimnames(transition_matrix) <- list(possibleNotes, possibleNotes)
   frequency_vector <- matrix(rep(0, length(possibleNotes)), nrow=1, ncol=length(possibleNotes))
@@ -82,10 +91,9 @@ transitionMatrix <- function(transition_matrix, possibleNotes, notes){
   for(i in 1:length(notes)){
     if(i == 1){next;}
     
-    prev <- notes[i-1]
-    curr <- notes[i]
-    
-    transition_matrix[curr,prev] <- transition_matrix[curr,prev] + 1
+    prev <- toString(notes[i-1])
+    curr <- toString(notes[i])
+    transition_matrix[prev,curr] <- transition_matrix[prev,curr] + 1
   }
   
   #Divide by univariate frequency to get probabilities
@@ -102,16 +110,16 @@ frequencyVector<- function(note_frequency, possibleNotes, notes){
     colnames(note_frequency) <- possibleNotes
     #Fill up frequency vector
     for(i in 1:length(notes)){
-      curr <- notes[i]
-      note_frequency[curr] <- note_frequency[curr] + 1
+      curr <- toString(notes[i])
+      note_frequency[1, curr] <- note_frequency[1, curr] + 1
     }
     return(note_frequency)
   }
 
   #Fill up frequency vector
   for(i in 1:length(notes)){
-    curr <- notes[i]
-    note_frequency[curr] <- note_frequency[curr] + 1
+    curr <- toString(notes[i])
+    note_frequency[1, curr] <- note_frequency[1, curr] + 1
   }
   return(note_frequency)
 }
@@ -122,11 +130,21 @@ getCorpus <- function(folderName){
   return(lapply(files, readMidi))
 }
 
+#Gets all notes from the corpus as multiple lists
+getNotesForCorpus <- function(corpus, midi_notes){
+  return (lapply(corpus, function(c) return(getNotesForItem(c, midi_notes))))
+}
+
 #Gets the notes for a specific item
 getNotesForItem <- function(item, midi_notes){
       # Get all note on events
     note_on <- item[which(item$event=="Note On"),]
+    key <- midi_notes$number
     # Get notes from the events as a sequence
     notes <- midi_notes[match(note_on$parameter1, key),]$notes
     return(notes)
 }
+
+#Drop columns and rows with 0
+transition_matrix <- transition_matrix[, -(which(colSums(transition_matrix) == 0))]
+transition_matrix <- transition_matrix[-(which(rowSums(transition_matrix) == 0,))]
