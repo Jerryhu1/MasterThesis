@@ -147,4 +147,4 @@ getNotesForItem <- function(item, midi_notes){
 
 #Drop columns and rows with 0
 transition_matrix <- transition_matrix[, -(which(colSums(transition_matrix) == 0))]
-transition_matrix <- transition_matrix[-(which(rowSums(transition_matrix) == 0,))]
+transition_matrix <- transition_matrix[-(which(rowSums(transition_matrix) == 0)), ]

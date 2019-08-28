@@ -13,7 +13,7 @@ class GeneticAlgorithm(val populationSize: Int, val iterations: Int) {
   val tempo = 120
 
   var population = new ArrayBuffer[Bar]
-  var transitionMatrix = new Matrix
+//  var transitionMatrix = new Matrix
 
   def run() : Unit = {
 
