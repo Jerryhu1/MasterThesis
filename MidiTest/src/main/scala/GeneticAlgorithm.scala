@@ -1,25 +1,26 @@
+import constants.Constants
+import csv.MatrixReader
 import models.Matrix.Matrix
 import models.{Bar, Note}
 import org.jfugue.player.Player
-import services.{Crossover, Duration, Fitness, Mutation}
+import services._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.language.postfixOps
 import services.Rng.rng
 
+import scala.collection.mutable
+
 class GeneticAlgorithm(val populationSize: Int, val iterations: Int) {
 
-  val measureLength = 32
-  val tempo = 120
 
   var population = new ArrayBuffer[Bar]
-//  var transitionMatrix = new Matrix
 
   def run() : Unit = {
 
     System.out.println("Initialising population...")
-    initializePopulation(populationSize)
-
+    val matrix = MatrixReader.getTransitionMatrixFromFile()
+    population = Initialisation.initializePopulationByModel(matrix, 10)
     System.out.println(s"Done initialising, Starting evolution, doing $iterations iterations")
     for(i <- 0 until iterations){
       selectionCrossoverMutation()
@@ -28,28 +29,12 @@ class GeneticAlgorithm(val populationSize: Int, val iterations: Int) {
     System.out.println("Done with evolving, playing....")
 
     for(bar : Bar <- population.sortBy(x => x.fitness).reverse.take(5)){
-      val pattern = bar.convertToPattern(1, "Piano", tempo)
+      val pattern = bar.convertToPattern(1, "Piano", Constants.tempo)
       System.out.println(s"Playing pattern ${pattern.toString} with fitness: ${bar.fitness}")
       pattern.add("V2 I[Piano] C4majw D4majw E4minw C4majw Gmajw D4maj4w Cmajw")
       val player = new Player()
 
       player.play(pattern)
-    }
-  }
-
-  def initializePopulation(populationSize: Int) : Unit ={
-    population = new ArrayBuffer[Bar]
-    for(i <- 0 until populationSize){
-      val bar = new Bar()
-
-      for(j <- 0 until measureLength){
-        // Generate notes between C4 and C6
-        val note = new Note(60 + rng.nextInt(10), Duration.getDuration())
-        bar.notes += note
-      }
-      val fitness = Fitness.getFitness(bar)
-      bar.fitness = fitness
-      population += bar
     }
   }
 

@@ -1,7 +1,10 @@
 package models
+
+import scala.collection.mutable
+
 object Matrix {
 
-  type Matrix = Seq[Seq[Double]] {
+  type Matrix = mutable.Map[(Note, Note), Double] {
 
   }
 
