@@ -11,7 +11,7 @@ import services.Rng.rng
 
 import scala.collection.mutable
 
-class GeneticAlgorithm(val populationSize: Int, val iterations: Int) {
+class GeneticAlgorithm() {
 
 
   var population = new ArrayBuffer[Bar]
@@ -19,10 +19,13 @@ class GeneticAlgorithm(val populationSize: Int, val iterations: Int) {
   def run() : Unit = {
 
     System.out.println("Initialising population...")
-    val matrix = MatrixReader.getTransitionMatrixFromFile()
+
+    val matrix = MatrixReader.getTransitionMatrixFromFile
     population = Initialisation.initializePopulationByModel(matrix, 10)
-    System.out.println(s"Done initialising, Starting evolution, doing $iterations iterations")
-    for(i <- 0 until iterations){
+
+    System.out.println(s"Done initialising, Starting evolution, doing ${Constants.iterations} iterations")
+
+    for(_ <- 0 until Constants.iterations){
       selectionCrossoverMutation()
     }
 
@@ -40,7 +43,7 @@ class GeneticAlgorithm(val populationSize: Int, val iterations: Int) {
 
   def selectionCrossoverMutation() : ArrayBuffer[Bar] = {
     var nextGeneration = new ArrayBuffer[Bar]
-    for(i <- 0 until populationSize by 4){
+    for(i <- 0 until Constants.populationSize by 4){
       // Selection
       val parents = population.slice(i, i + 4).sortBy(x => x.fitness)
       val children = new ArrayBuffer[Bar]
@@ -66,9 +69,13 @@ class GeneticAlgorithm(val populationSize: Int, val iterations: Int) {
         nextGeneration += ind
       }
     }
+    return nextGeneration
+  }
 
-    nextGeneration
+  def updateModel(matrix: Matrix) : Matrix = {
+    for(i <- population){
 
+    }
   }
 
 

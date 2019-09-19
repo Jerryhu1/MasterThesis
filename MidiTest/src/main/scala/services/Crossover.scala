@@ -9,9 +9,9 @@ object Crossover {
   val rng = new Random()
 
   def onePoint(p1: Bar, p2: Bar) : (Bar,Bar) = {
-    var point = rng.nextInt(p1.notes.length)
-    var c1 = new Bar()
-    var c2 = new Bar()
+    val point = rng.nextInt(p1.notes.length)
+    val c1 = new Bar()
+    val c2 = new Bar()
 
     for(i <- 0 until point){
       c1.notes += p2.notes(i)

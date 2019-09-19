@@ -1,8 +1,8 @@
 package services
 
-import models.Matrix.Matrix
 import models.{Bar, Note}
 import constants.Constants
+import models.Matrix.Matrix
 
 import scala.annotation.tailrec
 import scala.collection.mutable.ArrayBuffer

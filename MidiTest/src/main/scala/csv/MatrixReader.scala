@@ -10,7 +10,7 @@ object MatrixReader {
 
   val fileName = "transition-matrix.csv"
 
-  def getTransitionMatrixFromFile() : Matrix = {
+  def getTransitionMatrixFromFile: Matrix = {
     val dir = System.getProperty("user.dir")
     val src = Source.fromFile(dir + "/resources/" + fileName)
     val lines = src.getLines()
@@ -30,8 +30,7 @@ object MatrixReader {
         matrix += (transition -> p.toDouble)
       }
     })
-
-    matrix
+    return matrix
   }
 
 }
