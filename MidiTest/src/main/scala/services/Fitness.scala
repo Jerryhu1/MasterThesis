@@ -14,16 +14,16 @@ object Fitness {
     Note.fromNoteString("B6", 0.125),
 
   )
-  def getFitness(bar: Bar): Int ={
+  def getFitness(bar: Bar): Double ={
     //Switch case for fitness method
-    var fitness = 0
+    var fitness = 0.0
 
     for(note <- bar.notes){
       if(CMajorScale.map(x => x.note).contains(note.note) || note.name == "R" ){
-        fitness += 1
+        fitness += 1.0
       }
     }
 
-    fitness
+    fitness / bar.notes.length
   }
 }

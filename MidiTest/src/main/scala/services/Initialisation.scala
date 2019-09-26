@@ -46,7 +46,7 @@ object Initialisation {
 
     (size : Int, bar: Bar) match {
       // If the duration is longer than 1.0, trim and return
-      case (_,b) if b.getDuration() >= 1.0 =>
+      case (_,b) if b.getDuration() >= Constants.bars =>
         trimBar(b)
       // Start case
       case (s, b) if s == 0 && b != null =>
@@ -86,7 +86,7 @@ object Initialisation {
 
 
   def trimBar(bar: Bar) : Bar = {
-    var difference = bar.getDuration() - 1.0
+    var difference = bar.getDuration() - Constants.bars
     while(difference > 0.0){
 
       val lastNote = bar.notes.last
@@ -98,7 +98,7 @@ object Initialisation {
         lastNote.duration = lastNote.duration - difference
       }
 
-      difference = bar.getDuration() - 1.0
+      difference = bar.getDuration() - Constants.bars
 
     }
     return bar

@@ -1,5 +1,6 @@
 import constants.Constants
 import csv.MatrixReader
+import javax.sound.midi.MidiSystem
 import models.Matrix.Matrix
 import models.{Bar, Note}
 import org.jfugue.pattern.Pattern
@@ -28,18 +29,22 @@ class GeneticAlgorithm {
 
     for(i <- 0 until Constants.iterations){
       // Selection
-      //val selectedPopulation = Constants.selection(population)
-      //population = new ArrayBuffer[Bar]
+      val selectedPopulation = Constants.selection(population)
+      population = new ArrayBuffer[Bar]
 
       // Repopulation
       // Update matrix with selection
       //matrix = MatrixUpdater.updateMatrix(selectedPopulation, matrix)
 
       // Sample new population from updated matrix
-      //val samplePopulation = Initialisation.initializePopulationByModel(matrix, Constants.samplePopulationSize)
+      val samplePopulation = Initialisation.initializePopulationByModel(matrix, Constants.samplePopulationSize)
+    //  selectedPopulation.foreach(Constants.mutation)
 
+      selectedPopulation.foreach(x => x.fitness = Constants.fitnessFunction(x))
+
+      selectedPopulation ++= samplePopulation
       // Get new population from crossover and mutation
-     // population = selectionCrossoverMutation
+      //population = selectionCrossoverMutation
 
 //      for(i <- selectedPopulation.indices by 2) {
 //        val (c1,c2) = Constants.crossover(selectedPopulation(i), selectedPopulation(i+1))
@@ -51,10 +56,10 @@ class GeneticAlgorithm {
 //        population += c2
 //      }
 
-      //population ++= samplePopulation
+      population = selectedPopulation
 
       System.out.println(s"Iteration $i done: " +
-        s"\n Average fitness: ${population.foldLeft(0){ (acc, i) => acc + i.fitness} / Constants.populationSize}" +
+        s"\n Average fitness: ${population.foldLeft(0.0){ (acc, i) => acc + i.fitness} / Constants.populationSize}" +
         s"\n Max fitness: ${population.map(_.fitness).max}")
     }
 
@@ -80,10 +85,9 @@ class GeneticAlgorithm {
 
     val bars = population.sortBy(x => x.fitness).reverse
     for (bar: Bar <- bars.take(5)) {
-     // val pattern = bar.convertToPattern(1, "Piano", Constants.tempo)
-      //System.out.println(s"Playing pattern ${pattern.toString} with fitness: ${bar.fitness}")
-      var pattern = new Pattern()
-      pattern.add("V2 I[Piano] C4majw C4majw C4majw C4majw Cmajw C4maj4w Cmajw")
+      val pattern = bar.convertToPattern(1, "Piano", Constants.tempo)
+      System.out.println(s"Playing pattern ${pattern.toString} with fitness: ${bar.fitness}")
+      pattern.add("V2 I[Piano] C4majw C4majw C4majw C4majw")
       val player = new Player()
 
       player.play(pattern)
@@ -100,6 +104,7 @@ class GeneticAlgorithm {
       for(j <- parents.indices by 2){
         val newChildren = Crossover.onePoint(parents(j), parents(j+1))
         //Mutation
+        //TODO: Mutation will break atm 
         Mutation.applyMutation(newChildren._1)
         newChildren._1.fitness = Fitness.getFitness(newChildren._1)
         Mutation.applyMutation(newChildren._2)

@@ -10,15 +10,15 @@ object Constants {
 
   val filePath = "./resources/transition-matrix.csv"
   // EA
-  val populationSize = 100
-  lazy val samplePopulationSize: Int = 50
-  lazy val crossoverPopulationSize: Int = 100
-  val iterations = 1
+  val populationSize = 20
+  lazy val samplePopulationSize: Int = 10
+  lazy val crossoverPopulationSize: Int = 10
+  val iterations = 100
     // Operators
   val crossover: (Bar, Bar) => (Bar, Bar) = (c1: Bar, c2: Bar) => Crossover.onePoint(c1, c2)
   val initialisation: (Matrix, Int) => ArrayBuffer[Bar] = (m: Matrix, n: Int) => Initialisation.initializePopulationByModel(m, n)
   val mutation: Bar => Unit = (b: Bar) => Mutation.changePitch(b)
-  val fitnessFunction: Bar => Int = (b: Bar) => Fitness.getFitness(b)
+  val fitnessFunction: Bar => Double = (b: Bar) => Fitness.getFitness(b)
   val selection: ArrayBuffer[Bar] => ArrayBuffer[Bar] = (p: ArrayBuffer[Bar]) => Selection.tournament(p)
 
   // Music

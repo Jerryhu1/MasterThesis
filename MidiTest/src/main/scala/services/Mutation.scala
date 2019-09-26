@@ -31,8 +31,13 @@ object Mutation {
   }
 
   def changePitch(individual: Bar) : Unit = {
-    var index = rng.nextInt(individual.notes.length-1)
-    var tone = rng.nextInt(7)
-    individual.notes(index) = Fitness.CMajorScale(tone)
+    if(rng.nextDouble() > 0.9) {
+      var index = rng.nextInt(individual.notes.length - 1)
+      var tone = rng.nextInt(7)
+      val newNote = Fitness.CMajorScale(tone)
+      val currNote = individual.notes(index)
+      newNote.duration = currNote.duration
+      individual.notes(index) = newNote
+    }
   }
 }

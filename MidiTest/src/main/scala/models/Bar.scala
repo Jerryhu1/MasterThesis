@@ -5,7 +5,7 @@ import org.jfugue.pattern.Pattern
 import scala.collection.mutable.{ListBuffer}
 
 class Bar(val notes: ListBuffer[Note] = ListBuffer()) {
-  var fitness : Int = 0
+  var fitness : Double = 0
 
   def convertToPattern(voice: Int, instrument: String, tempo: Int) : Pattern = {
     var pattern = new Pattern()
