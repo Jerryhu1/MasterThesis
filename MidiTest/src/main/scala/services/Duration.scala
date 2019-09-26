@@ -9,11 +9,11 @@ object Duration {
     if(durationCase < 6){
       return 0.250
     }
-    if(durationCase < 8){
-      0.5
+    else if(durationCase < 8){
+      0.125
     }
     else{
-      0.125
+      0.5
     }
   }
 }

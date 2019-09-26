@@ -5,6 +5,6 @@ object Main {
 
   def main(args: Array[String]) : Unit = {
     val alg = new GeneticAlgorithm()
-    alg.run()
+    alg.jfugueTest()
   }
 }

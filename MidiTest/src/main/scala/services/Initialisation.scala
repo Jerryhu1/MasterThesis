@@ -6,6 +6,7 @@ import models.Matrix.Matrix
 
 import scala.annotation.tailrec
 import scala.collection.mutable.ArrayBuffer
+import scala.util.Random
 
 object Initialisation {
 
@@ -29,22 +30,24 @@ object Initialisation {
 
   def initializePopulationByModel(matrix: Matrix, populationSize: Int) : ArrayBuffer[Bar] = {
     val keys = matrix.keys.toIndexedSeq
-    val random = Rng.rng.nextInt(keys.size-1)
     val population = new ArrayBuffer[Bar]
 
-    for(i <- 0 until Constants.populationSize){
-      population += randomWalk(0, new Bar(), keys, matrix)
+    for(i <- 0 until populationSize){
+      var i = randomWalk(0, new Bar(), keys, matrix, Rng.rng)
+      i.fitness = Constants.fitnessFunction(i)
+      population += i
     }
 
     return population
   }
 
   @tailrec
-  def randomWalk(size: Int = 0, bar: Bar, keys: IndexedSeq[(Note, Note)], matrix: Matrix) : Bar = {
+  def randomWalk(size: Int = 0, bar: Bar, keys: IndexedSeq[(Note, Note)], matrix: Matrix, rng: Random) : Bar = {
+
     (size : Int, bar: Bar) match {
-      //TODO: Replace hardcoded 32 with measure length
-      // End case
-      case (s, b) if s >= 32 && b != null => b
+      // If the duration is longer than 1.0, trim and return
+      case (_,b) if b.getDuration() >= 1.0 =>
+        trimBar(b)
       // Start case
       case (s, b) if s == 0 && b != null =>
         val randomKey = Rng.rng.nextInt(keys.size - 1)
@@ -53,35 +56,52 @@ object Initialisation {
         // TODO: Sample duration randomly, now taken from transition matrix
         bar.notes += notes._1
         bar.notes += notes._2
-        randomWalk(size + 2, bar, keys, matrix)
+        randomWalk(size + 2, bar, keys, matrix, rng)
       case _ =>
-        val (t1,t2) = getRandomTransition(matrix, bar.notes.last)
-        if(t2 == null){
-          val x = 2
-        }
-        bar.notes += t2
-        randomWalk(size+1, bar, keys, matrix)
+        val note = getRandomTransition(matrix, bar.notes.last)
+        bar.notes += note
+        randomWalk(size+1, bar, keys, matrix, rng)
     }
   }
 
-  def getRandomTransition(matrix : Matrix, startNote: Note) : (Note, Note) = {
+  def getRandomTransition(matrix : Matrix, startNote: Note) : Note = {
     val transitions = matrix.filter(item => startNote.equals(item._1._1))
+    if(transitions.isEmpty){
+      System.err.println(s"No transitions found for note: ${startNote.name}")
+    }
     val rng = Rng.rng.nextDouble()
     var pCounter = 0.0
 
     for ((k,v) <- transitions) {
       // If the random number is inside the cumulative probability, take this transition
       if(rng > pCounter && rng < pCounter + v){
-        if(k._2 == null){
-          val x = 2
-        }
-        return (k._1, k._2)
+        return k._2
       }
       pCounter += v
     }
-    // Should not be possible
+    // Should not be possible unless there is a probability not adding up to 1
+    System.err.println(s"Probabilities of transitions of ${startNote} do not add up to one")
     null
   }
 
+
+  def trimBar(bar: Bar) : Bar = {
+    var difference = bar.getDuration() - 1.0
+    while(difference > 0.0){
+
+      val lastNote = bar.notes.last
+
+      if(lastNote.duration - difference <= 0.0){
+        bar.notes.remove(bar.notes.size-1)
+      }
+      else{
+        lastNote.duration = lastNote.duration - difference
+      }
+
+      difference = bar.getDuration() - 1.0
+
+    }
+    return bar
+  }
 }
 

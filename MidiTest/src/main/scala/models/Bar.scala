@@ -18,6 +18,9 @@ class Bar(val notes: ListBuffer[Note] = ListBuffer()) {
     pattern
   }
 
+  def getDuration() : Double = {
+    notes.map(_.duration).foldLeft(0.0){ (acc, i ) => acc + i }
+  }
 }
 
 object Bar{

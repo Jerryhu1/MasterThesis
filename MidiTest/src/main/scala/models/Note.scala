@@ -2,7 +2,9 @@ package models
 
 case class Note(var note: Integer, var duration : Double, var name: String) {
   def toJFugueNote(): org.jfugue.theory.Note = {
-    new org.jfugue.theory.Note(note, duration)
+    val note = new org.jfugue.theory.Note(name)
+    note.setDuration(duration)
+    note
   }
 
   override def equals(obj: scala.Any): Boolean = {
@@ -17,8 +19,7 @@ case class Note(var note: Integer, var duration : Double, var name: String) {
 object Note{
   def fromNoteString(note: String, duration: Double) : Note = {
     val fugueNote = new org.jfugue.theory.Note(note)
-
-    Note(fugueNote.getValue.toInt, duration, fugueNote.originalString)
+    Note(fugueNote.getValue.toInt, duration, note)
   }
 
 }

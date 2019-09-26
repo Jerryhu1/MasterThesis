@@ -19,7 +19,7 @@ object Fitness {
     var fitness = 0
 
     for(note <- bar.notes){
-      if(CMajorScale.map(x => x.note).contains(note.note)){
+      if(CMajorScale.map(x => x.note).contains(note.note) || note.name == "R" ){
         fitness += 1
       }
     }

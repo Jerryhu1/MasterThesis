@@ -3,6 +3,7 @@ package services
 import models.Bar
 
 import scala.util.Random
+;
 
 object Mutation {
   val rng = new Random()

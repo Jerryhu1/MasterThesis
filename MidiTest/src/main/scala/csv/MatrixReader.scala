@@ -1,7 +1,8 @@
 package csv
 
-import models.{Matrix, Note}
+import models.Note
 import models.Matrix.Matrix
+import services.Duration
 
 import scala.collection.mutable
 import scala.io.Source
@@ -20,13 +21,14 @@ object MatrixReader {
     val matrix = new mutable.HashMap[(Note, Note), Double]
 
     // for each row in csv
-    iterator foreach(row => {
+    iterator foreach (row => {
       // for each note horizontally
       notes.zipWithIndex.foreach { case (note, i) =>
         // Replace quotes the vertical axis note
         val currNote = row(0).replaceAll("\"", "")
-        val p = row(i+1)
-        val transition = (Note.fromNoteString(currNote, 0.25), Note.fromNoteString(note, 0.25))
+        val p = row(i + 1)
+        //TODO: Change duration to actual from corpus
+        val transition = (Note.fromNoteString(currNote, Duration.getDuration()), Note.fromNoteString(note, Duration.getDuration()))
         matrix += (transition -> p.toDouble)
       }
     })
