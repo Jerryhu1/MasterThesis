@@ -38,9 +38,10 @@ class GeneticAlgorithm {
 
       // Sample new population from updated matrix
       val samplePopulation = Initialisation.initializePopulationByModel(matrix, Constants.samplePopulationSize)
-    //  selectedPopulation.foreach(Constants.mutation)
 
-      selectedPopulation.foreach(x => x.fitness = Constants.fitnessFunction(x))
+      // selectedPopulation.foreach(Constants.mutation)
+
+      // selectedPopulation.foreach(x => x.fitness = Constants.fitnessFunction(x))
 
       selectedPopulation ++= samplePopulation
       // Get new population from crossover and mutation
