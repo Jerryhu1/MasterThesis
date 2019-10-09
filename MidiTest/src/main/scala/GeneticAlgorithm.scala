@@ -88,7 +88,6 @@ class GeneticAlgorithm {
     for (bar: Bar <- bars.take(5)) {
       val pattern = bar.convertToPattern(1, "Piano", Constants.tempo)
       System.out.println(s"Playing pattern ${pattern.toString} with fitness: ${bar.fitness}")
-      pattern.add("V2 I[Piano] C4majw C4majw C4majw C4majw")
       val player = new Player()
 
       player.play(pattern)

@@ -74,7 +74,7 @@ object Initialisation {
 
     for ((k,v) <- transitions) {
       // If the random number is inside the cumulative probability, take this transition
-      if(rng > pCounter && rng < pCounter + v){
+      if(rng >= pCounter && rng <= pCounter + v){
         return k._2
       }
       pCounter += v
