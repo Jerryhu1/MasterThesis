@@ -80,7 +80,7 @@ object Initialisation {
       pCounter += v
     }
     // Should not be possible unless there is a probability not adding up to 1
-    System.err.println(s"Probabilities of transitions of ${startNote} do not add up to one")
+    System.err.println(s"Probabilities of transitions of ${startNote} do not add up to one, cumulative p = $pCounter")
     null
   }
 

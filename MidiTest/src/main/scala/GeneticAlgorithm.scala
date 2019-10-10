@@ -44,6 +44,7 @@ class GeneticAlgorithm {
       // selectedPopulation.foreach(x => x.fitness = Constants.fitnessFunction(x))
 
       selectedPopulation ++= samplePopulation
+      matrix = MatrixUpdater.updateMatrix(selectedPopulation, matrix)
       // Get new population from crossover and mutation
       //population = selectionCrossoverMutation
 
