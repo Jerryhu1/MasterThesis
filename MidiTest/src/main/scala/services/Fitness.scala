@@ -8,11 +8,6 @@ object Fitness {
     Note.fromNoteString("C6", 0.125),
     Note.fromNoteString("D6", 0.125),
     Note.fromNoteString("E6", 0.125),
-    Note.fromNoteString("F6", 0.125),
-    Note.fromNoteString("G6", 0.125),
-    Note.fromNoteString("A6", 0.125),
-    Note.fromNoteString("B6", 0.125),
-
   )
   def getFitness(bar: Bar): Double ={
     //Switch case for fitness method

@@ -9,7 +9,7 @@ case class Note(var note: Integer, var duration : Double, var name: String) {
 
   override def equals(obj: scala.Any): Boolean = {
     obj match {
-      case x: Note => return x.note == this.note
+      case x: Note => return x.name == this.name
       case _ => return super.equals(obj)
     }
     false

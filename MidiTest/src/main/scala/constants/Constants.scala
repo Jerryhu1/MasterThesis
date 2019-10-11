@@ -10,11 +10,11 @@ object Constants {
 
   val filePath = "./resources/transition-matrix.csv"
   // EA
-  val populationSize = 100
-  lazy val samplePopulationSize: Int = 10
-  lazy val crossoverPopulationSize: Int = 10
-  val iterations = 1
-  val learningRate = 0.1 // Rate the model gets updated by selection
+  val populationSize = 8
+  lazy val samplePopulationSize: Int = 4
+  lazy val crossoverPopulationSize: Int = 4
+  val iterations = 30
+  val learningRate = 0.8 // Rate the model gets updated by selection
     // Operators
   val crossover: (Bar, Bar) => (Bar, Bar) = (c1: Bar, c2: Bar) => Crossover.onePoint(c1, c2)
   val initialisation: (Matrix, Int) => ArrayBuffer[Bar] = (m: Matrix, n: Int) => Initialisation.initializePopulationByModel(m, n)

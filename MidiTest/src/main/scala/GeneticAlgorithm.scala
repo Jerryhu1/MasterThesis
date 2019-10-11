@@ -1,8 +1,12 @@
+import java.io.File
+import java.time.LocalDateTime
+
 import constants.Constants
 import csv.MatrixReader
 import javax.sound.midi.MidiSystem
 import models.Matrix.Matrix
 import models.{Bar, Note}
+import org.jfugue.midi.MidiFileManager
 import org.jfugue.pattern.Pattern
 import org.jfugue.player.Player
 import services._
@@ -44,7 +48,6 @@ class GeneticAlgorithm {
       // selectedPopulation.foreach(x => x.fitness = Constants.fitnessFunction(x))
 
       selectedPopulation ++= samplePopulation
-      matrix = MatrixUpdater.updateMatrix(selectedPopulation, matrix)
       // Get new population from crossover and mutation
       //population = selectionCrossoverMutation
 
@@ -60,7 +63,11 @@ class GeneticAlgorithm {
 
       population = selectedPopulation
 
-      System.out.println(s"Iteration $i done: " +
+      println("Updating matrix")
+
+      matrix = MatrixUpdater.updateMatrix(selectedPopulation, matrix)
+
+      System.out.println(s"\n Iteration $i done: " +
         s"\n Average fitness: ${population.foldLeft(0.0){ (acc, i) => acc + i.fitness} / Constants.populationSize}" +
         s"\n Max fitness: ${population.map(_.fitness).max}")
     }
@@ -91,8 +98,9 @@ class GeneticAlgorithm {
       System.out.println(s"Playing pattern ${pattern.toString} with fitness: ${bar.fitness}")
       val player = new Player()
 
-      player.play(pattern)
+      //player.play(pattern)
     }
+    MidiFileManager.savePatternToMidi(bars(0).convertToPattern(1, "Piano", Constants.tempo), new File(s"run.mid"))
   }
 
   private def selectionCrossoverMutation() : ArrayBuffer[Bar] = {
