@@ -6,6 +6,7 @@ import services.Duration
 
 import scala.collection.mutable
 import scala.io.Source
+import scala.util.Try
 
 object MatrixReader {
 
@@ -64,16 +65,21 @@ object MatrixReader {
 
       // for each note (column)
       notes.zipWithIndex.foreach { case (note, i) =>
-        print(note)
         // for each row in csv
         iterator foreach (row => {
           // Replace quotes the vertical axis note
           val currNote = row(0).replaceAll("\"", "")
-          val p = row(i + 1)
+          val p = Try(row(i + 1).toDouble).toOption
           //TODO: Change duration to actual from corpus
           val transition = (Note.fromNoteString(note, Duration.getDuration()), Note.fromNoteString(currNote, Duration.getDuration()))
-          matrix += (transition -> p.toDouble)
+          p match {
+            case None =>
+              System.err.println(s"Could not parse probability value of transition $note -> $currNote, setting p to 0.0")
+              matrix += (transition -> 0.0)
+            case Some(v) => matrix += (transition -> v)
+          }
         })
+
       }
 
     return matrix
