@@ -78,6 +78,7 @@ class MatrixUpdaterTest extends FunSuite{
     val C = new Note(1, 0.25, "C")
     val D = new Note(1, 0.25, "D")
     val E = new Note(1, 0.25, "E")
+    val X = new Note(1, 0.25, "X")
 
     val population : ArrayBuffer[Bar] = ArrayBuffer[Bar](
         new Bar(

@@ -98,7 +98,7 @@ class GeneticAlgorithm {
       System.out.println(s"Playing pattern ${pattern.toString} with fitness: ${bar.fitness}")
       val player = new Player()
 
-      //player.play(pattern)
+      player.play(pattern)
     }
     MidiFileManager.savePatternToMidi(bars(0).convertToPattern(1, "Piano", Constants.tempo), new File(s"run.mid"))
   }

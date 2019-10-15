@@ -13,7 +13,7 @@ object Constants {
   val populationSize = 8
   lazy val samplePopulationSize: Int = 4
   lazy val crossoverPopulationSize: Int = 4
-  val iterations = 30
+  val iterations = 0
   val learningRate = 0.8 // Rate the model gets updated by selection
     // Operators
   val crossover: (Bar, Bar) => (Bar, Bar) = (c1: Bar, c2: Bar) => Crossover.onePoint(c1, c2)
