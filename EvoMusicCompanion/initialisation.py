@@ -1,4 +1,5 @@
 import random
+import fitness
 
 
 def get_random_transition(matrix, start_note):
@@ -28,7 +29,7 @@ def initialize_population(population_size, measure_length, matrix):
     for i in range(population_size):
         individual = []
         for j in range(measure_length):
-            random.random()
+
             while len(individual) < measure_length:
                 if len(individual) == 0:
                     # Add durations
@@ -37,7 +38,9 @@ def initialize_population(population_size, measure_length, matrix):
                     # Add durations
                     next_note = get_random_transition(matrix, individual[-1])
                 individual.append(next_note)
-        print(individual)
-        population.append(individual)
+
+        f = fitness.get_fitness(individual)
+
+        population.append((individual, f))
 
     return population
