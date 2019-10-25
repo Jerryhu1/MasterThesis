@@ -9,16 +9,17 @@ def flatten(l):
     return [item for sublist in l for item in sublist]
 
 
-def train():
-    pieces = get_corpus()
-    notes = get_notes_per_score(pieces)
-    possible_notes = get_possible_notes(flatten(notes))
+def train_pitch_matrix(scores):
+    if scores is None:
+        scores = get_corpus()
+    notes = get_pitches_per_score(scores)
+    possible_pitches = get_possible_pitches(flatten(notes))
     freq_array = create_frequency_array(notes)
-    freq_matrix = create_frequency_matrix(notes, possible_notes)
-    return get_probabilistic_matrix(freq_matrix, freq_array, possible_notes)
+    freq_matrix = create_frequency_matrix(notes, possible_pitches)
+    return get_probabilistic_matrix(freq_matrix, freq_array, possible_pitches)
 
 
-def get_possible_notes(notes):
+def get_possible_pitches(notes):
     return set(notes)
 
 
@@ -34,12 +35,11 @@ def get_corpus():
     return bach_corpus_scores
 
 
-def get_notes_per_score(scores):
-    possible_notes = set()  # set containing all possible notes for matrix creation
+def get_pitches_per_score(scores):
     all_notes_per_score = []  # Multidimensional array of all notes per piece
 
     for p in scores:
-        curr_notes = []
+        curr_pitches = []
         # Get a part of the piece
         note_iterator = p.parts[0].getElementsByClass(stream.Measure).flat.getElementsByClass('Note')
         if len(note_iterator) == 0:
@@ -47,16 +47,13 @@ def get_notes_per_score(scores):
         for el in note_iterator:
             pitch_name = el.nameWithOctave
             if '-' in pitch_name or '##' in pitch_name:
-                note_name = el.pitch.getEnharmonic().nameWithOctave
-                possible_notes.add(note_name)
-                curr_notes.append(note_name)
+                pitch_name = el.pitch.getEnharmonic().nameWithOctave
+                curr_pitches.append(pitch_name)
             else:
-                note_name = el.nameWithOctave
-                possible_notes.add(note_name)
-                curr_notes.append(note_name)
-        all_notes_per_score.append(curr_notes)
+                curr_pitches.append(pitch_name)
+        all_notes_per_score.append(curr_pitches)
 
-    return all_notes_per_score, possible_notes
+    return all_notes_per_score
 
 
 def create_frequency_array(notes):
@@ -102,7 +99,66 @@ def get_probabilistic_matrix(matrix, frequency_array, possible_notes):
     return matrix
 
 
-def update_matrix(samples, matrix, divergence_rate):
+def train_duration_matrix(scores):
+    if scores is None:
+        scores = get_corpus()
+    # set containing all possible notes for matrix creation
+    possible_durations = ['half', 'quarter', 'eighth', '16th', '32nd', '64th']
+    all_durations = []  # Multidimensional array of all notes per piece
+    last_durations = []
+
+    for i in scores:
+        # Get a part of the piece
+        noteIterator = i.parts[0].getElementsByClass(stream.Measure).flat.getElementsByClass('Note')
+        curr_duration = []
+
+        if len(noteIterator) == 0:
+            continue
+        for j in range(len(noteIterator)):
+            dur = noteIterator[j]
+
+            if dur.duration.type not in possible_durations:
+                continue
+
+            if j == len(noteIterator)-1:
+                last_durations.append(dur.duration.type)
+
+            curr_duration.append(dur.duration.type)
+
+        all_durations.append(curr_duration)
+
+    # We do not want to include
+    last_durations_counter = collections.Counter(last_durations)
+
+    counter = collections.Counter(flatten(all_durations))
+    counter = counter - last_durations_counter
+
+    zeros = np.full((len(possible_durations), len(possible_durations)), 0)
+    matrix = pd.DataFrame(zeros, index=possible_durations, columns=possible_durations)
+    matrix = matrix.astype(float)
+
+    # Fill transition matrix frequencies
+    for dur in all_durations:
+        for j in range(len(dur)):
+            # First note
+            if j == 0:
+                continue
+
+            curr_duration = dur[j-1]
+            next_duration = dur[j]
+
+            matrix[curr_duration][next_duration] = matrix[curr_duration][next_duration] + 1
+
+    # Divide each row to get probabilistic model
+    for i in possible_durations:
+        for j in possible_durations:
+            if counter[j] != 0 and matrix[j][i] != 0:
+                matrix[j][i] = matrix[j][i] / counter[j]
+
+    return matrix
+
+
+def update_pitch_matrix(samples, matrix, divergence_rate):
 
     possible_notes = set(flatten(samples))
     freq_array = create_frequency_array(samples)

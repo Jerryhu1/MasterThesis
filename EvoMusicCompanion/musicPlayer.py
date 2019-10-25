@@ -7,11 +7,16 @@ def play(population):
     notes = []
     for i in population:
         measure = []
+        print(i)
         for j in i:
-            if j == ' ':
-                measure.append(note.Rest())
+            if j[0] == ' ':
+                n = note.Rest()
+                n.duration.type = j[1]
+                measure.append(n)
             else:
-                measure.append(note.Note(j))
+                n = note.Note(j[0])
+                n.duration.type = j[1]
+                measure.append(n)
         notes.append(measure)
 
     s = stream.Score(id='mainScore')
