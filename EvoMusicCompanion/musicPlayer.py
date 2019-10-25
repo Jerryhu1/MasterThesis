@@ -1,30 +1,33 @@
 from music21 import *
+import individual
 
 
-def play(population):
-    population = map(lambda x: x[0], population)
+def play(population: [individual.Individual]):
+    population = map(lambda x: x.notes, population)
+    score = []
 
-    notes = []
     for i in population:
-        measure = []
-        print(i)
-        for j in i:
-            if j[0] == ' ':
-                n = note.Rest()
-                n.duration.type = j[1]
-                measure.append(n)
-            else:
-                n = note.Note(j[0])
-                n.duration.type = j[1]
-                measure.append(n)
-        notes.append(measure)
+        # For each measure
+        for m in i:
+            measure = []
+            # For each note
+            for j in m:
+                if j.pitch == ' ':
+                    n = note.Rest()
+                    n.duration = duration.Duration(quarterLength=j.duration.duration_value/0.25)
+                    measure.append(n)
+                else:
+                    n = note.Note(j.pitch)
+                    n.duration = duration.Duration(quarterLength=j.duration.duration_value/0.25)
+                    measure.append(n)
+            score.append(measure)
 
     s = stream.Score(id='mainScore')
     part = stream.Part(id='part0')
 
-    for i in range(len(notes)):
+    for i in range(len(score)):
         m = stream.Measure(i + 1)
-        notesInMeasure = notes[i]
+        notesInMeasure = score[i]
         for n in notesInMeasure:
             m.append(n)
         part.append(m)

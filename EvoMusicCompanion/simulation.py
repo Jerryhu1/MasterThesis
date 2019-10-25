@@ -1,6 +1,8 @@
 import modelTrainer
 import musicPlayer
 import initialisation
+import individual
+import constants
 
 
 class Simulation:
@@ -61,13 +63,13 @@ class Simulation:
             self.duration_matrix = duration_matrix
 
         population = initialisation.initialize_population(self.population_size, 8, self.pitch_matrix, self.duration_matrix)
-        population.sort(key=lambda x: x[1], reverse=True)
+        population.sort(key=lambda x: x.fitness, reverse=True)
 
         return population
 
-    def update(self, selection):
-        selected_population_notes = list(map(lambda x: x[0], selection))
-        selected_population_pitches = list(map(lambda x: list(map(lambda y: y[0], x)), selected_population_notes))
+    def update(self, selection: [individual.Individual]):
+        selected_population_notes = constants.flatten(list(map(lambda x: x.notes, selection)))
+        selected_population_pitches = list(map(lambda x: x.pitch, selected_population_notes))
         self.pitch_matrix = modelTrainer.update_pitch_matrix(selected_population_pitches, self.pitch_matrix, 0.8)
         population = initialisation.initialize_population(self.population_size, 8, self.pitch_matrix, self.duration_matrix)
 
