@@ -1,4 +1,4 @@
-NUM_OF_MEASURES = 2.0
+NUM_OF_MEASURES = 2
 
 
 def flatten(l):

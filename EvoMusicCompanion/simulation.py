@@ -62,16 +62,23 @@ class Simulation:
         else:
             self.duration_matrix = duration_matrix
 
-        population = initialisation.initialize_population(self.population_size, 8, self.pitch_matrix, self.duration_matrix)
+        population = initialisation.initialize_population(self.population_size, constants.NUM_OF_MEASURES, self.pitch_matrix, self.duration_matrix)
         population.sort(key=lambda x: x.fitness, reverse=True)
 
         return population
 
     def update(self, selection: [individual.Individual]):
+
         selected_population_notes = constants.flatten(list(map(lambda x: x.notes, selection)))
-        selected_population_pitches = list(map(lambda x: x.pitch, selected_population_notes))
+        selected_population_pitches = []
+        for i in selected_population_notes:
+            measure = []
+            for j in i:
+                measure.append(j.pitch)
+            selected_population_pitches.append(measure)
+        # TODO: Update duration matrix
         self.pitch_matrix = modelTrainer.update_pitch_matrix(selected_population_pitches, self.pitch_matrix, 0.8)
-        population = initialisation.initialize_population(self.population_size, 8, self.pitch_matrix, self.duration_matrix)
+        population = initialisation.initialize_population(self.population_size, constants.NUM_OF_MEASURES, self.pitch_matrix, self.duration_matrix)
 
         return population
 
