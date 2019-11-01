@@ -1,5 +1,5 @@
 import constants
-
+import music21
 
 class Individual:
 
@@ -30,3 +30,7 @@ class Note:
         return f"({self.pitch}, {self.duration})"
 
     __repr__ = __str__
+
+    def __gt__(self, other):
+        music21.note.Note(self.pitch) > music21.note.Note(other.pitch)
+        

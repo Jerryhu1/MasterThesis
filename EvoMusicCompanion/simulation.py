@@ -67,6 +67,10 @@ class Simulation:
 
         return population
 
+    def run_with_template(self, pitch_matrix, template):
+        population = initialisation.initialize_population_by_template(self.population_size, template, 'contour', pitch_matrix)
+        return population
+
     def update(self, selection: [individual.Individual]):
 
         selected_population_notes = constants.flatten(list(map(lambda x: x.notes, selection)))

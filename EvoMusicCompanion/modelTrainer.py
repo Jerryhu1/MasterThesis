@@ -41,9 +41,15 @@ def get_pitches_per_score(scores):
     for p in scores:
         curr_pitches = []
         # Get a part of the piece
-        note_iterator = p.parts[0].getElementsByClass(stream.Measure).flat.getElementsByClass('Note')
+        measure_iterator = p.parts[0].getElementsByClass(stream.Measure)
+        if len(measure_iterator) > 0:
+            note_iterator = measure_iterator.flat.getElementsByClass('Note')
+        else:
+            note_iterator = p.parts[0].getElementsByClass('Note')
+
         if len(note_iterator) == 0:
             continue
+        
         for el in note_iterator:
             pitch_name = el.nameWithOctave
             if '-' in pitch_name or '##' in pitch_name:
@@ -127,7 +133,6 @@ def train_duration_matrix(scores):
 
         all_durations.append(curr_duration)
 
-    # We do not want to include
     last_durations_counter = collections.Counter(last_durations)
 
     counter = collections.Counter(flatten(all_durations))

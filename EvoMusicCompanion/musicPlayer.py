@@ -34,3 +34,18 @@ def play(population: [individual.Individual]):
 
     s.append(part)
     s.show('musicxml')
+
+
+def play_pitches(population):
+    score = []
+    for i in population:
+        for j in i:
+            score.append(note.Note(j))
+
+    s = stream.Score(id='mainScore')
+    part = stream.Part(id='part0')
+
+    part.append(score)
+
+    s.append(part)
+    s.show('musicxml')
