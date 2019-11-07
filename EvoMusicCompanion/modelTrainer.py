@@ -2,6 +2,8 @@ import collections
 
 import numpy as np
 import pandas as pd
+import util
+
 from music21 import *
 
 
@@ -30,6 +32,8 @@ def get_corpus():
 
     for c in six_eight:
         score = c.parse()
+        # Tranpose to C
+        score = util.transpose_piece(score, 'C')
         bach_corpus_scores.append(score)
 
     return bach_corpus_scores

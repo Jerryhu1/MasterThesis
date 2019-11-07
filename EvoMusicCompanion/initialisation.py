@@ -35,24 +35,22 @@ def get_pitch_transition_by_contour(pitch, contour, matrix):
         if k == ' ':
             continue
         if contour == 'h':
-            if(music21.note.Note(k) > music21.note.Note(pitch)):
+            if music21.note.Note(k) > music21.note.Note(pitch):
                 t_contour[k] = v
         elif contour == 'l':
-            if(music21.note.Note(k) < music21.note.Note(pitch)):
+            if music21.note.Note(k) < music21.note.Note(pitch):
                 t_contour[k] = v
         elif contour == 'b':
-            if(music21.note.Note(k) >= music21.note.Note(pitch)):
+            if music21.note.Note(k) >= music21.note.Note(pitch):
                     t_contour[k] = v
         elif contour == 'p':
-            if(music21.note.Note(k) <= music21.note.Note(pitch)):
+            if music21.note.Note(k) <= music21.note.Note(pitch):
                     t_contour[k] = v
         elif contour == 'e':
-            if(music21.note.Note(k) == music21.note.Note(pitch)):
+            if music21.note.Note(k) == music21.note.Note(pitch):
                     t_contour[k] = v
         else:
             t_contour[k] = v
-            
-            
             
     rng = random.random()
     p_sum = 0.0
@@ -114,10 +112,10 @@ def initialize_population(population_size, measure_length, pitch_matrix, duratio
 
                 (exceeds, d) = exceeds_duration(measure, next_duration)
                 # If the maximum duration is exceeded by the next note, either shorten it or stop
-                if exceeds and d >= 0.015625:
-                    print(f"Exceeded max duration, decreasing it to {d}")
-                    next_duration = duration.Duration(None, d)
-                elif exceeds:
+                # if exceeds and d >= 0.015625:
+                #     print(f"Exceeded max duration, decreasing it to {d}")
+                #     next_duration = duration.Duration(None, d)
+                if exceeds:
                     break
                 next_note = individual.Note(next_pitch, next_duration)
                 measure.append(next_note)
@@ -164,6 +162,8 @@ def initialize_population_by_template(population_size, template, mode, matrix):
                     next_pitch = get_pitch_transition_by_contour(notes[-1], c, matrix)
                     if next_pitch is None:
                         # Do something when we are in unsatisfiable state.
+                        next_pitch = 'C4'
+
                 notes.append(next_pitch)
         population.append(notes)
     return population

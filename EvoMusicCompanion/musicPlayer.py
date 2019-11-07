@@ -31,9 +31,27 @@ def play(population: [individual.Individual]):
         for n in notesInMeasure:
             m.append(n)
         part.append(m)
-
+    chords = get_c_chord_part(len(part))
     s.append(part)
+    s.append(chords)
+
+    print(f'key = {s.analyze("key")}')
+
     s.show('musicxml')
+
+def get_c_chord_part(measures):
+    chords = [['C3', 'E3', 'G3'], ['G3', 'B3', 'D3'], ['E3', 'G3', 'B3'], ['D3', 'F#3', 'A3']]
+    counter = 0
+    chord_part = stream.Part(id='part1')
+    for m in range(measures):
+
+        c = chord.Chord(chords[counter], quarterLength=4.0)
+        chord_part.append(c)
+        counter += 1
+        if counter == 4:
+            counter = 0
+
+    return chord_part
 
 
 def play_pitches(population):

@@ -32,5 +32,5 @@ class Note:
     __repr__ = __str__
 
     def __gt__(self, other):
-        music21.note.Note(self.pitch) > music21.note.Note(other.pitch)
+        return music21.note.Note(self.pitch) > music21.note.Note(other.pitch)
         
