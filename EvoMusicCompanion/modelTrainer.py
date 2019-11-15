@@ -1,8 +1,11 @@
-import collections
+from collections import Counter, defaultdict
 
+import collections
 import numpy as np
 import pandas as pd
 import util
+import nltk
+import constants
 
 from music21 import *
 
@@ -14,15 +17,35 @@ def flatten(l):
 def train_pitch_matrix(scores):
     if scores is None:
         scores = get_corpus()
-    notes = get_pitches_per_score(scores)
-    possible_pitches = get_possible_pitches(flatten(notes))
-    freq_array = create_frequency_array(notes)
-    freq_matrix = create_frequency_matrix(notes, possible_pitches)
-    return get_probabilistic_matrix(freq_matrix, freq_array, possible_pitches)
+
+    notes = flatten(get_pitches_per_score(scores))
+
+    if constants.N_GRAM == 'trigram':
+        matrix = get_trigram_matrix(notes)
+    else:
+        matrix = get_bigram_matrix(notes)
+
+    return get_probabilistic_matrix(matrix)
 
 
-def get_possible_pitches(notes):
-    return set(notes)
+def get_trigram_matrix(items):
+    trigrams = nltk.trigrams(items)
+    matrix = defaultdict(lambda: defaultdict(lambda: 0))
+    for n1, n2, n3 in trigrams:
+        matrix[(n1, n2)][n3] += 1
+    matrix = pd.DataFrame(matrix)
+    matrix = matrix.fillna(0)
+    return matrix
+
+
+def get_bigram_matrix(items):
+    bigrams = nltk.bigrams(items)
+    matrix = defaultdict(lambda: defaultdict(lambda: 0))
+    for n1, n2 in bigrams:
+        matrix[n1][n2] += 1
+    matrix = pd.DataFrame(matrix)
+    matrix = matrix.fillna(0)
+    return matrix
 
 
 def get_corpus():
@@ -45,23 +68,30 @@ def get_pitches_per_score(scores):
     for p in scores:
         curr_pitches = []
         # Get a part of the piece
-        measure_iterator = p.parts[0].getElementsByClass(stream.Measure)
-        if len(measure_iterator) > 0:
-            note_iterator = measure_iterator.flat.getElementsByClass('Note')
-        else:
-            note_iterator = p.parts[0].getElementsByClass('Note')
-
-        if len(note_iterator) == 0:
-            continue
-        
-        for el in note_iterator:
-            pitch_name = el.nameWithOctave
-            if '-' in pitch_name or '##' in pitch_name:
-                pitch_name = el.pitch.getEnharmonic().nameWithOctave
-                curr_pitches.append(pitch_name)
+        for part in p.parts:
+            measure_iterator = part.getElementsByClass(stream.Measure)
+            if len(measure_iterator) > 0:
+                note_iterator = measure_iterator.flat.notesAndRests
             else:
+                note_iterator = part.notesAndRests
+
+            if len(note_iterator) == 0:
+                continue
+
+            for el in note_iterator:
+                if el.isChord:
+                    pitch_name = el.root()
+                if el.isRest:
+                    pitch_name = 'REST'
+                else:
+                    pitch_name = el.nameWithOctave
+                    if pitch_name not in constants.NOTE_RANGE:
+                        continue
+                    if '-' in pitch_name or '##' in pitch_name:
+                        pitch_name = el.pitch.getEnharmonic().nameWithOctave
                 curr_pitches.append(pitch_name)
-        all_notes_per_score.append(curr_pitches)
+
+            all_notes_per_score.append(curr_pitches)
 
     return all_notes_per_score
 
@@ -101,11 +131,14 @@ def create_frequency_matrix(pieces, possible_notes):
     return matrix
 
 
-def get_probabilistic_matrix(matrix, frequency_array, possible_notes):
-    # Divide each row to get probabilistic model
-    for i in possible_notes:
-        for j in possible_notes:
-            matrix[j][i] = matrix[j][i] / frequency_array[j]
+def get_probabilistic_matrix(matrix):
+    matrix = matrix.astype(float)
+    for n1_n2 in matrix:
+        total_count = sum(matrix[n1_n2])
+        for n3 in matrix[n1_n2].keys():
+            if matrix[n1_n2][n3] != 0.0:
+                matrix[n1_n2][n3] /= total_count
+
     return matrix
 
 
@@ -113,71 +146,97 @@ def train_duration_matrix(scores):
     if scores is None:
         scores = get_corpus()
     # set containing all possible notes for matrix creation
-    possible_durations = ['half', 'quarter', 'eighth', '16th', '32nd', '64th']
+    possible_durations = ['half', 'quarter', 'eighth', '16th']
     all_durations = []  # Multidimensional array of all notes per piece
-    last_durations = []
 
     for i in scores:
         # Get a part of the piece
         noteIterator = i.parts[0].getElementsByClass(stream.Measure).flat.getElementsByClass('Note')
-        curr_duration = []
-
         if len(noteIterator) == 0:
-            continue
+            noteIterator = i.parts[0].notesAndRests
+
         for j in range(len(noteIterator)):
             dur = noteIterator[j]
 
             if dur.duration.type not in possible_durations:
                 continue
 
-            if j == len(noteIterator)-1:
-                last_durations.append(dur.duration.type)
+            all_durations.append(dur.duration.type)
 
-            curr_duration.append(dur.duration.type)
+    if constants.N_GRAM == 'trigram':
+        matrix = get_trigram_matrix(all_durations)
+    else:
+        matrix = get_bigram_matrix(all_durations)
 
-        all_durations.append(curr_duration)
-
-    last_durations_counter = collections.Counter(last_durations)
-
-    counter = collections.Counter(flatten(all_durations))
-    counter = counter - last_durations_counter
-
-    zeros = np.full((len(possible_durations), len(possible_durations)), 0)
-    matrix = pd.DataFrame(zeros, index=possible_durations, columns=possible_durations)
-    matrix = matrix.astype(float)
-
-    # Fill transition matrix frequencies
-    for dur in all_durations:
-        for j in range(len(dur)):
-            # First note
-            if j == 0:
-                continue
-
-            curr_duration = dur[j-1]
-            next_duration = dur[j]
-
-            matrix[curr_duration][next_duration] = matrix[curr_duration][next_duration] + 1
-
-    # Divide each row to get probabilistic model
-    for i in possible_durations:
-        for j in possible_durations:
-            if counter[j] != 0 and matrix[j][i] != 0:
-                matrix[j][i] = matrix[j][i] / counter[j]
-
-    return matrix
+    return get_probabilistic_matrix(matrix)
 
 
-def update_pitch_matrix(samples, matrix, divergence_rate):
+def train_interval_matrix(scores):
+    first_notes_per_bar = []
+    all_intervals = []
+    for s in scores:
+        noteIterator = s.parts[0].getElementsByClass(stream.Measure)
+        if len(noteIterator) == 0:
+            noteIterator = s.parts[0].notesAndRests.stream()
+        for i in noteIterator:
+            firstNote = None
+            counter = 1
+            m = []
+            for j in i.notesAndRests:
+                if j.isChord:
+                    curr_note = note.Note(j.root())
+                elif j.isRest:
+                    m.append('REST')
+                    continue
+                else:
+                    curr_note = j
+                if counter == 1:
+                    if j.isChord:
+                        firstNote = note.Note(j.root())
+                    else:
+                        firstNote = j
+                    pitch_name = firstNote.nameWithOctave
+                    if '-' in pitch_name or '##' in pitch_name:
+                        pitch_name = firstNote.pitch.getEnharmonic().nameWithOctave
+                    if pitch_name in constants.NOTE_RANGE:
+                        first_notes_per_bar.append(pitch_name)
+                    counter += 1
+                    continue
+                octave = curr_note.octave
+                root = note.Note('C')
+                root.octave = octave
+                interv = interval.Interval(root,  curr_note).name
+                m.append(interv)
+                counter += 1
+            all_intervals.append(interv)
 
-    possible_notes = set(flatten(samples))
-    freq_array = create_frequency_array(samples)
-    freq_matrix = create_frequency_matrix(samples, possible_notes)
-    u_matrix = get_probabilistic_matrix(freq_matrix, freq_array, possible_notes)
+    bigrams = list(nltk.bigrams(all_intervals))
+    matrix = defaultdict(lambda: defaultdict(lambda: 0))
+
+    for i1,i2 in bigrams:
+        matrix[i1][i2] += 1
+
+    for i1 in matrix:
+        total = float(sum(matrix[i1].values()))
+        for i2 in matrix[i1]:
+            matrix[i1][i2] /= total
+
+    int_matrix = pd.DataFrame(matrix)
+    int_matrix = int_matrix.fillna(0)
+    return int_matrix
+
+
+def update_matrix(samples, matrix, convergence_rate):
+    if constants.N_GRAM == 'trigram':
+        n_matrix = get_trigram_matrix(flatten(samples))
+    else:
+        n_matrix = get_bigram_matrix(flatten(samples))
+
+    u_matrix = get_probabilistic_matrix(n_matrix)
     new_matrix = matrix.copy()
 
     for i in new_matrix.keys():
         for j in new_matrix.keys():
-
             if i in u_matrix and j in u_matrix[i]:
                 # u_matrix contains the values, subtract from each other
                 difference = u_matrix[i][j] - matrix[i][j]
@@ -187,6 +246,6 @@ def update_pitch_matrix(samples, matrix, divergence_rate):
             else:  # u_matrix contains the column, but not the row. So no transitions to that note at all
                 difference = -matrix[i][j]
 
-            new_matrix[i][j] = matrix[i][j] + (difference * divergence_rate)
+            new_matrix[i][j] = matrix[i][j] + (difference * convergence_rate)
 
     return new_matrix

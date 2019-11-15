@@ -3,6 +3,37 @@ import individual
 
 
 def play(population: [individual.Individual]):
+
+    s = stream.Score(id='mainScore')
+    part = stream.Part(id='part0')
+    part1 = stream.Part(id='part1')
+    for i in range(len(population)):
+        # For each measure
+        for m in population[i].measures:
+            measure = stream.Measure(i + 1)
+            chord_measure = stream.Measure(i + 1)
+            chord_measure.append(chord.Chord(m.chord, quarterLength=4.0))
+            # For each note
+            for j in m.notes:
+                if j.pitch == 'REST':
+                    n = note.Rest()
+                    n.duration = duration.Duration(quarterLength=j.duration.duration_value/0.25)
+                else:
+                    n = note.Note(j.pitch)
+                    n.duration = duration.Duration(quarterLength=j.duration.duration_value/0.25)
+                measure.append(n)
+
+            part.append(measure)
+            part1.append(chord_measure)
+    s.append(part)
+    s.append(part1)
+
+    print(f'key = {s.analyze("key")}')
+
+    s.show('musicxml')
+
+
+def play_intervals(population: [individual.Individual]):
     population = map(lambda x: x.notes, population)
     score = []
 
@@ -12,12 +43,13 @@ def play(population: [individual.Individual]):
             measure = []
             # For each note
             for j in m:
-                if j.pitch == ' ':
+                if j.pitch == 'REST':
                     n = note.Rest()
                     n.duration = duration.Duration(quarterLength=j.duration.duration_value/0.25)
                     measure.append(n)
                 else:
-                    n = note.Note(j.pitch)
+                    intv = interval.Interval(j.interval)
+                    n = intv.transposeNote(note.Note('C5'))
                     n.duration = duration.Duration(quarterLength=j.duration.duration_value/0.25)
                     measure.append(n)
             score.append(measure)
@@ -38,6 +70,7 @@ def play(population: [individual.Individual]):
     print(f'key = {s.analyze("key")}')
 
     s.show('musicxml')
+
 
 def get_c_chord_part(measures):
     chords = [['C3', 'E3', 'G3'], ['G3', 'B3', 'D3'], ['E3', 'G3', 'B3'], ['D3', 'F#3', 'A3']]
