@@ -79,12 +79,13 @@ def get_pitches_per_score(scores):
                 continue
 
             for el in note_iterator:
-                if el.isChord:
-                    pitch_name = el.root()
                 if el.isRest:
                     pitch_name = 'REST'
                 else:
-                    pitch_name = el.nameWithOctave
+                    if el.isChord:
+                        pitch_name = el.root().nameWithOctave
+                    else:
+                        pitch_name = el.nameWithOctave
                     if pitch_name not in constants.NOTE_RANGE:
                         continue
                     if '-' in pitch_name or '##' in pitch_name:
