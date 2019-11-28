@@ -2,7 +2,9 @@ import constants
 import music21
 import re
 
+
 class Individual:
+    user_score = "NEUTRAL"
 
     def __init__(self, measures, fitness):
         self.measures = measures
@@ -37,9 +39,10 @@ class Note:
 
     def __gt__(self, other):
         return music21.note.Note(self.pitch) > music21.note.Note(other.pitch)
-        
+
 
 class Measure:
+    user_score = "NEUTRAL"
 
     def __init__(self, notes, fitness, chord):
         self.notes = notes
@@ -54,6 +57,6 @@ class Measure:
             self.chordWithoutOctave = list(map(lambda x: re.sub('\d+', '', x), chord))
 
     def __str__(self):
-        return f"Notes: {self.notes}, Chord: {self.chord}, Fitness: {self.fitness}"
+        return f"Notes: {self.notes}, Chord: {self.chord}, Fitness: {self.fitness}, User score: {self.user_score}"
 
     __repr__ = __str__

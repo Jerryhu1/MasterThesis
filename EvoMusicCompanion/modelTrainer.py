@@ -6,6 +6,7 @@ import pandas as pd
 import util
 import nltk
 import constants
+import individual
 
 from music21 import *
 
@@ -39,6 +40,8 @@ def get_trigram_matrix(items):
 
 
 def get_bigram_matrix(items):
+    if items[0] is individual.Note:
+        items = map(lambda x: x.pitch, items)
     bigrams = nltk.bigrams(items)
     matrix = defaultdict(lambda: defaultdict(lambda: 0))
     for n1, n2 in bigrams:
@@ -83,6 +86,9 @@ def get_pitches_per_score(scores):
                     pitch_name = 'REST'
                 else:
                     if el.isChord:
+                        root = el.root()
+                        if root is None:
+                            continue
                         pitch_name = el.root().nameWithOctave
                     else:
                         pitch_name = el.nameWithOctave
