@@ -41,3 +41,15 @@ DURATION_BLOCKS = [
     [0.25, 0.25, 0.25, 0.25],
     [0.25, 0.25, 0.25, 0.25]
 ]
+
+Wp = 0.5
+Wm = 0.7
+Wn = 0.5
+
+USER_RATINGS = [
+    "Very good",
+    "Good",
+    "Neutral",
+    "Bad",
+    "Very bad"
+]

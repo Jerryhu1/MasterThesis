@@ -130,7 +130,8 @@ def initialize_population(population_size, pitch_matrix, duration_matrix, init_v
                 #     print(f"Exceeded max duration, decreasing it to {d}")
                 #     next_duration = duration.Duration(None, d)
                 if exceeds:
-                    break
+                    next_pitch = 'REST'
+                    next_duration = duration.Duration(None, d)
                 next_note = individual.Note(next_pitch, next_duration)
                 notes_in_measure.append(next_note)
 

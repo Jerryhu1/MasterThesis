@@ -30,7 +30,9 @@ def play(population: [individual.Individual]):
 
     print(f'key = {s.analyze("key")}')
 
-    s.show('musicxml')
+    player = midi.realtime.StreamPlayer(s)
+
+    player.play()
 
 
 def play_intervals(population: [individual.Individual]):
@@ -69,7 +71,9 @@ def play_intervals(population: [individual.Individual]):
 
     print(f'key = {s.analyze("key")}')
 
-    s.show('musicxml')
+    player = midi.realtime.StreamPlayer(s)
+
+    player.play()
 
 
 def get_c_chord_part(measures):
