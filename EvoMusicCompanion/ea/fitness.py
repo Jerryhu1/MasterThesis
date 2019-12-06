@@ -46,3 +46,4 @@ def fitness_chord_tone(individual: Individual):
         j.fitness = counter
         total_count += counter
     return total_count / len(individual.measures)
+    

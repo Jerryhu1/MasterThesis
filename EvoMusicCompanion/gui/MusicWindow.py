@@ -14,12 +14,14 @@ class MusicWindow(QWidget):
     def __init__(self, model: MusicWindowViewModel):
         super().__init__()
         self.model = model
-        self.titleLabel = QLabel(text=f"Piece: {self.model.curr_piece_idx + 1}/{len(self.model.individuals)}")
+        self.titleLabel = QLabel(text=f"Piece: {self.model.curr_piece_idx + 1}/{len(self.model.pieces)}")
+        self.fitnessLabel = QLabel(text=f"Fitness: {self.model.curr_piece.fitness}")
         self.initUI()
         self.musicThread = MusicPlayerThread(None, '')
 
     def setModel(self, model):
         self.model = model
+        self.update()
 
     def initUI(self):
         vbox = QVBoxLayout()
@@ -39,7 +41,7 @@ class MusicWindow(QWidget):
             ratingBtn.clicked.connect(partial(self.setPieceRating, self.model.curr_piece_idx, i))
             fullboxRating.addWidget(ratingBtn)
 
-        measures = self.model.curr_individual.measures
+        measures = self.model.curr_piece.measures
         measureGrid = QGridLayout()
 
         for m in range(len(measures)):
@@ -63,7 +65,7 @@ class MusicWindow(QWidget):
         vbox.addLayout(fullbox, 1)
         vbox.addLayout(measureGrid, 4)
         vbox.addWidget(pcb, 1)
-
+        vbox.addWidget(self.fitnessLabel)
         self.setLayout(vbox)
 
     def setPieceRating(self, pieceIndex, rating):
@@ -76,19 +78,19 @@ class MusicWindow(QWidget):
 
     def playMeasure(self, measure_idx):
         self.musicThread.terminate()
-        measure = self.model.curr_individual.measures[measure_idx]
+        measure = self.model.curr_piece.measures[measure_idx]
         self.musicThread = MusicPlayerThread(measure, 'measure')
         self.musicThread.start()
 
     def playPiece(self):
         self.musicThread.terminate()
-        self.musicThread = MusicPlayerThread([self.model.curr_individual], 'piece')
+        self.musicThread = MusicPlayerThread([self.model.curr_piece], 'piece')
         self.musicThread.start()
 
     def toNextPiece(self):
         next_index = self.model.curr_piece_idx + 1
-        if next_index < len(self.model.individuals):
-            self.model.curr_individual = self.model.individuals[next_index]
+        if next_index < len(self.model.pieces):
+            self.model.curr_piece = self.model.pieces[next_index]
             self.model.curr_piece_idx = next_index
             self.refreshTitleLabel()
 
@@ -96,15 +98,15 @@ class MusicWindow(QWidget):
         next_index = self.model.curr_piece_idx - 1
 
         if next_index >= 0:
-            self.model.curr_individual = self.model.individuals[next_index]
+            self.model.curr_piece = self.model.pieces[next_index]
             self.model.curr_piece_idx = next_index
             self.refreshTitleLabel()
 
     def toPieceByIdx(self, index):
-        self.model.curr_individual = self.model.individuals[index]
+        self.model.curr_piece = self.model.pieces[index]
         self.refreshTitleLabel()
 
     def refreshTitleLabel(self):
         print(f"Curr index: {self.model.curr_piece_idx}")
-        self.titleLabel.setText(f"Piece: {self.model.curr_piece_idx + 1}/{len(self.model.individuals)}")
+        self.titleLabel.setText(f"Piece: {self.model.curr_piece_idx + 1}/{len(self.model.pieces)}")
         self.update()

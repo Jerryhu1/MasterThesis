@@ -10,11 +10,11 @@ class MusicWindowViewModel:
             options = None
     ):
         self.parent = parent
-        self.individuals = pieces
+        self.pieces  = pieces
         if curr_piece is None:
-            self.curr_individual = pieces[0]
+            self.curr_piece = pieces[0]
             self.curr_piece_idx = 0
         else:
-            self.curr_individual = curr_piece
+            self.curr_piece = curr_piece
             self.curr_piece_idx = pieces.index(curr_piece)
         self.options = options

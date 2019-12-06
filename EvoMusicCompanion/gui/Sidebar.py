@@ -10,11 +10,15 @@ class Sidebar(QWidget):
         self.generation = generation
         self.initUI()
 
+    def setModel(self, generation):
+        self.generation = generation
+        self.update()
+
     def initUI(self):
         vbox = QVBoxLayout()
         titleLabel = QLabel(text="EvoMusic")
         generationsLabel = QLabel(text=f"Generation: {self.generation}")
-
+        
         generateButton = QPushButton("Generate new songs")
         generateButton.clicked.connect(self.parent.toNextGeneration)
 

@@ -27,7 +27,7 @@ class Main(QWidget):
         population = self.state.simulation.population
         self.music_window = MusicWindow(MusicWindowViewModel(self, population))
         self.sidebar = Sidebar(self)
-
+        
     def initMainContainer(self):
         self.main_container = QHBoxLayout()
         self.main_container.addWidget(self.sidebar, 1)
@@ -63,18 +63,16 @@ class Main(QWidget):
         self.simulation.run_interactively(pitch_matrix, duration_matrix, None)
 
     def toNextGeneration(self):
+        print(f"Generating next generation {self.state.currGeneration + 1}")
         self.state.simulation.update()
         self.state.currGeneration += 1
         self.updateViews()
 
     def updateViews(self):
         musicViewModel = MusicWindowViewModel(self, self.state.simulation.population, None, None)
-        self.main_container.removeWidget(self.music_window)
-        self.main_container.removeWidget(self.sidebar)
 
-        self.music_window = MusicWindow(musicViewModel)
-        self.sidebar = Sidebar(self, self.state.currGeneration)
-        self.initMainContainer()
+        self.music_window.setModel(musicViewModel)
+        self.sidebar.setModel(self.state.currGeneration)
         self.update()
 
     def setPieceRating(self, piece_idx, rating):
