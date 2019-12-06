@@ -1,10 +1,7 @@
-from individual import Individual, Note, Measure
+from ea.individual import Individual, Note, Measure
 from music21 import pitch, interval
 import random
-import fitness
-import individual
-import duration
-import constants
+from ea import fitness, duration, individual, constants
 import music21
 
 

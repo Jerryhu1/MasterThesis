@@ -1,12 +1,10 @@
-from collections import Counter, defaultdict
+from collections import defaultdict
 
 import collections
 import numpy as np
 import pandas as pd
-import util
+from ea import util, individual, constants
 import nltk
-import constants
-import individual
 
 from music21 import *
 
@@ -52,17 +50,17 @@ def get_bigram_matrix(items):
 
 
 def get_corpus():
-    six_eight = corpus.search('6/8')
+    curr_corpus = corpus.search('mozart', 'composer')
 
-    bach_corpus_scores = []
+    scores = []
 
-    for c in six_eight:
+    for c in curr_corpus:
         score = c.parse()
         # Tranpose to C
         score = util.transpose_piece(score, 'C')
-        bach_corpus_scores.append(score)
+        scores.append(score)
 
-    return bach_corpus_scores
+    return scores
 
 
 def get_pitches_per_score(scores):

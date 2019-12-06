@@ -1,9 +1,9 @@
 from music21 import *
-import individual
+from ea import individual
+from ea.individual import Measure, Note
 
 
 def play(population: [individual.Individual]):
-
     s = stream.Score(id='mainScore')
     part = stream.Part(id='part0')
     part1 = stream.Part(id='part1')
@@ -12,15 +12,16 @@ def play(population: [individual.Individual]):
         for m in population[i].measures:
             measure = stream.Measure(i + 1)
             chord_measure = stream.Measure(i + 1)
-            chord_measure.append(chord.Chord(m.chord, quarterLength=4.0))
+            if m.chord is not None:
+                chord_measure.append(chord.Chord(m.chord, quarterLength=4.0))
             # For each note
             for j in m.notes:
                 if j.pitch == 'REST':
                     n = note.Rest()
-                    n.duration = duration.Duration(quarterLength=j.duration.duration_value/0.25)
+                    n.duration = duration.Duration(quarterLength=j.duration.duration_value / 0.25)
                 else:
                     n = note.Note(j.pitch)
-                    n.duration = duration.Duration(quarterLength=j.duration.duration_value/0.25)
+                    n.duration = duration.Duration(quarterLength=j.duration.duration_value / 0.25)
                 measure.append(n)
 
             part.append(measure)
@@ -31,7 +32,6 @@ def play(population: [individual.Individual]):
     print(f'key = {s.analyze("key")}')
 
     player = midi.realtime.StreamPlayer(s)
-
     player.play()
 
 
@@ -47,12 +47,12 @@ def play_intervals(population: [individual.Individual]):
             for j in m:
                 if j.pitch == 'REST':
                     n = note.Rest()
-                    n.duration = duration.Duration(quarterLength=j.duration.duration_value/0.25)
+                    n.duration = duration.Duration(quarterLength=j.duration.duration_value / 0.25)
                     measure.append(n)
                 else:
                     intv = interval.Interval(j.interval)
                     n = intv.transposeNote(note.Note('C5'))
-                    n.duration = duration.Duration(quarterLength=j.duration.duration_value/0.25)
+                    n.duration = duration.Duration(quarterLength=j.duration.duration_value / 0.25)
                     measure.append(n)
             score.append(measure)
 
@@ -104,3 +104,28 @@ def play_pitches(population):
 
     s.append(part)
     s.show('musicxml')
+
+
+def play_measure(measure: Measure):
+    s = stream.Score(id="mainScore")
+    part = stream.Part(id="part0")
+    m = convert_measure_to_music21_measure(measure)
+    part.append(m)
+    s.append(part)
+    player = midi.realtime.StreamPlayer(s)
+    player.play()
+
+
+def convert_measure_to_music21_measure(m: Measure):
+    m.notes: [Note]
+    measure = stream.Measure(1)
+    for j in m.notes:
+        if j.pitch == 'REST':
+            n_1 = note.Rest()
+            n_1.duration = duration.Duration(quarterLength=j.duration.duration_value / 0.25)
+        else:
+            n_1 = note.Note(j.pitch)
+            n_1.duration = duration.Duration(quarterLength=j.duration.duration_value / 0.25)
+        measure.append(n_1)
+
+    return measure

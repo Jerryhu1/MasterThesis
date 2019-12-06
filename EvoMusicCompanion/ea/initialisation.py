@@ -1,10 +1,7 @@
-from individual import Individual, Note, Measure
+from ea.individual import Individual, Note, Measure
 from music21 import pitch, interval
 import random
-import fitness
-import individual
-import duration
-import constants
+from ea import fitness, duration, individual, constants
 import music21
 
 
@@ -130,6 +127,7 @@ def initialize_population(population_size, pitch_matrix, duration_matrix, init_v
                 #     print(f"Exceeded max duration, decreasing it to {d}")
                 #     next_duration = duration.Duration(None, d)
                 if exceeds:
+                    break
                     next_pitch = 'REST'
                     next_duration = duration.Duration(None, d)
                 next_note = individual.Note(next_pitch, next_duration)

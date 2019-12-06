@@ -1,13 +1,15 @@
 from ea.individual import Individual
-from PyQt5.QtCore import QAbstractItemModel
 
 
-class MusicWindowViewModel(QAbstractItemModel):
+class MusicWindowViewModel:
     def __init__(
             self,
-            pieces : [Individual],
-            curr_piece: Individual,
-             options):
+            parent,
+            pieces: [Individual],
+            curr_piece: Individual = None,
+            options = None
+    ):
+        self.parent = parent
         self.individuals = pieces
         if curr_piece is None:
             self.curr_individual = pieces[0]

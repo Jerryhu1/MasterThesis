@@ -14,6 +14,7 @@ class MusicWindow(QWidget):
     def __init__(self, model: MusicWindowViewModel):
         super().__init__()
         self.model = model
+        self.titleLabel = QLabel(text=f"Piece: {self.model.curr_piece_idx + 1}/{len(self.model.individuals)}")
         self.initUI()
         self.musicThread = MusicPlayerThread(None, '')
 
@@ -22,7 +23,6 @@ class MusicWindow(QWidget):
 
     def initUI(self):
         vbox = QVBoxLayout()
-        titleLabel = QLabel(text=f"Piece: {self.model.curr_piece_idx + 1}")
 
         fullbox = QHBoxLayout()
         fullbox_container = QVBoxLayout()
@@ -36,6 +36,7 @@ class MusicWindow(QWidget):
 
         for i in range(5):
             ratingBtn = QPushButton()
+            ratingBtn.clicked.connect(partial(self.setPieceRating, self.model.curr_piece_idx, i))
             fullboxRating.addWidget(ratingBtn)
 
         measures = self.model.curr_individual.measures
@@ -50,17 +51,28 @@ class MusicWindow(QWidget):
 
             for i in range(5):
                 ratingBtn = QPushButton()
+                ratingBtn.clicked.connect(partial(
+                    self.setMeasureRating, self.model.curr_piece_idx, m, i))
                 ratingLayout.addWidget(ratingBtn)
+
             ratingWidget.setLayout(ratingLayout)
             measureGrid.addWidget(ratingWidget, 1, m)
 
         pcb = PlayControlBar(self.toNextPiece, self.toPreviousPiece)
-        vbox.addWidget(titleLabel, 1)
+        vbox.addWidget(self.titleLabel, 1)
         vbox.addLayout(fullbox, 1)
         vbox.addLayout(measureGrid, 4)
         vbox.addWidget(pcb, 1)
 
         self.setLayout(vbox)
+
+    def setPieceRating(self, pieceIndex, rating):
+        print(f"Set piece {pieceIndex} to rating: {rating}")
+        self.model.parent.setPieceRating(pieceIndex, rating)
+
+    def setMeasureRating(self, pieceIndex, measureIndex, rating):
+        print(f"Set measure {measureIndex} to rating: {rating} of piece: {pieceIndex}")
+        self.model.parent.setMeasureRating(pieceIndex, measureIndex, rating)
 
     def playMeasure(self, measure_idx):
         self.musicThread.terminate()
@@ -74,14 +86,25 @@ class MusicWindow(QWidget):
         self.musicThread.start()
 
     def toNextPiece(self):
-        next_index = self.model.individuals.index(self.model.curr_individual) + 1
-        self.model.curr_individual = self.model.individuals[next_index]
-        self.model.curr_piece_idx = next_index
+        next_index = self.model.curr_piece_idx + 1
+        if next_index < len(self.model.individuals):
+            self.model.curr_individual = self.model.individuals[next_index]
+            self.model.curr_piece_idx = next_index
+            self.refreshTitleLabel()
 
     def toPreviousPiece(self):
-        next_index = self.model.individuals.index(self.model.curr_individual) - 1
-        self.model.curr_individual = self.model.individuals[next_index]
-        self.model.curr_piece_idx = next_index
+        next_index = self.model.curr_piece_idx - 1
+
+        if next_index >= 0:
+            self.model.curr_individual = self.model.individuals[next_index]
+            self.model.curr_piece_idx = next_index
+            self.refreshTitleLabel()
 
     def toPieceByIdx(self, index):
         self.model.curr_individual = self.model.individuals[index]
+        self.refreshTitleLabel()
+
+    def refreshTitleLabel(self):
+        print(f"Curr index: {self.model.curr_piece_idx}")
+        self.titleLabel.setText(f"Piece: {self.model.curr_piece_idx + 1}/{len(self.model.individuals)}")
+        self.update()

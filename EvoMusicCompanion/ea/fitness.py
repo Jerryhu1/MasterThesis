@@ -1,6 +1,4 @@
-import constants
-
-from individual import Individual
+from ea.individual import Individual
 
 major_scale = ['A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5']
 

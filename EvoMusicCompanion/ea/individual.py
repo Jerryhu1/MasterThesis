@@ -1,10 +1,10 @@
-import constants
+from ea import constants
 import music21
 import re
 
 
 class Individual:
-    user_score = "NEUTRAL"
+    user_score = 3
 
     def __init__(self, measures, fitness):
         self.measures = measures
@@ -42,7 +42,7 @@ class Note:
 
 
 class Measure:
-    user_score = "NEUTRAL"
+    user_score = 3
 
     def __init__(self, notes, fitness, chord):
         self.notes = notes

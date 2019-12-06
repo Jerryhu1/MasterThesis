@@ -1,8 +1,5 @@
-import modelTrainer
-import musicPlayer
-import initialisation
-import individual
-import constants
+from ea import individual, musicPlayer, modelTrainer, initialisation
+from ea.individual import Individual
 
 
 class Simulation:
@@ -11,9 +8,12 @@ class Simulation:
     learning_rate = 0.5
     population_size = 10
 
-    def __init__(self, learning_rate, population_size):
+    def __init__(self, learning_rate, population_size, duration_matrix=None, pitch_matrix=None):
         self.learning_rate = learning_rate
         self.population_size = population_size
+        self.duration_matrix = duration_matrix
+        self.pitch_matrix = pitch_matrix
+        self.population: [Individual] = []
 
     def run(self, iterations, pitch_matrix, duration_matrix):
         print('Starting generation')
@@ -30,10 +30,10 @@ class Simulation:
 
         print('Starting evolution')
         for i in range(iterations):
-            population = initialisation.initialize_population(self.population_size, self.pitch_matrix,
-                                                              self.duration_matrix, None)
-            population.sort(key=lambda x: x.fitness, reverse=True)
-            selected_population = population[0:3]
+            self.population = initialisation.initialize_population(self.population_size, self.pitch_matrix,
+                                                                   self.duration_matrix, None)
+            self.population.sort(key=lambda x: x.fitness, reverse=True)
+            selected_population = self.population[0:3]
             self.update_matrices(selected_population)
 
             avg_fitness = sum(map(lambda x: x.fitness, selected_population)) / len(selected_population)
@@ -41,11 +41,11 @@ class Simulation:
             print(f"Average fitness: {avg_fitness}")
 
         print('Done evolving, playing songs')
-        for j in population[0:4]:
+        for j in self.population[0:4]:
             print(j)
-        musicPlayer.play(population)
+        musicPlayer.play(self.population)
 
-    def run_interactively(self, pitch_matrix, duration_matrix, init_vector):
+    def run_interactively(self, pitch_matrix=None, duration_matrix=None, init_vector=None):
         print('Starting generation')
 
         if pitch_matrix is None:
@@ -60,26 +60,30 @@ class Simulation:
         else:
             self.duration_matrix = duration_matrix
 
-        population = initialisation.initialize_population(self.population_size,
-                                                          self.pitch_matrix, self.duration_matrix, init_vector)
-        population.sort(key=lambda x: x.fitness, reverse=True)
-
-        return population
+        self.population = initialisation.initialize_population(self.population_size,
+                                                               self.pitch_matrix, self.duration_matrix, init_vector)
+        self.population.sort(key=lambda x: x.fitness, reverse=True)
+        return self.population
 
     def run_with_template(self, pitch_matrix, template):
-        population = initialisation.initialize_population_by_template(self.population_size, template, 'contour', pitch_matrix)
-        return population
+        self.population = initialisation.initialize_population_by_template(self.population_size, template, 'contour',
+                                                                           pitch_matrix)
+        return self.population
 
     def update_with_measures(self, selection: [individual.Measure]):
         [y.pitch for y in selection.notes]
         map(lambda m: m.notes, selection)
 
-    def update(self, selection: [individual.Individual]):
-        self.update_matrices(selection)
-        population = initialisation.initialize_population(self.population_size, self.
-                                                          pitch_matrix, self.duration_matrix, None)
+    def update(self, selection: [individual.Individual] = None):
+        if selection is None:
+            self.update_matrices(self.population)
+        else:
+            self.update_matrices(selection)
+        self.population = initialisation.initialize_population(self.population_size,
+                                                               self.pitch_matrix,
+                                                               self.duration_matrix, None)
 
-        return population
+        return self.population
 
     def update_matrices(self, selection):
         selected_population_pitches = []
@@ -96,4 +100,4 @@ class Simulation:
 
         # TODO: Update duration matrix
         self.pitch_matrix = modelTrainer.update_matrix(selected_population_pitches, self.pitch_matrix, 0.8)
-        #self.duration_matrix = modelTrainer.update_matrix(selected_population_durations, self.duration_matrix, 0.8)
+        # self.duration_matrix = modelTrainer.update_matrix(selected_population_durations, self.duration_matrix, 0.8)

@@ -1,5 +1,4 @@
-import constants
-import modelTrainer
+from ea import modelTrainer, constants
 
 
 def update_matrix(individuals, matrix):
@@ -45,10 +44,10 @@ def get_learning_rate(piece_score, measure_score):
 
 
 def get_num_score(score):
-    if score == "Very good":
+    if score == 5:
         return 0.6
-    if score == "Good":
+    if score == 4:
         return 0.4
-    if score == "Neutral":
+    if score == 3:
         return 0.2
     return 0.0
