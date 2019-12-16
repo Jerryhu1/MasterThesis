@@ -1,4 +1,4 @@
-from ea import individual, musicPlayer, modelTrainer, initialisation
+from ea import individual, musicPlayer, modelTrainer, initialisation, crossover, mutation, fitness
 from ea.individual import Individual
 
 
@@ -7,6 +7,7 @@ class Simulation:
     duration_matrix = None
     learning_rate = 0.5
     population_size = 10
+    selection_size = 5
 
     def __init__(self, learning_rate, population_size, duration_matrix=None, pitch_matrix=None):
         self.learning_rate = learning_rate
@@ -14,6 +15,7 @@ class Simulation:
         self.duration_matrix = duration_matrix
         self.pitch_matrix = pitch_matrix
         self.population: [Individual] = []
+        self.elitist_population: [Individual] = []
 
     def run(self, iterations, pitch_matrix, duration_matrix):
         print('Starting generation')
@@ -29,21 +31,43 @@ class Simulation:
         print('Initializing population')
 
         print('Starting evolution')
+        self.population = initialisation.initialize_population(self.population_size, self.pitch_matrix,
+                                                               self.duration_matrix, None)
         for i in range(iterations):
-            self.population = initialisation.initialize_population(self.population_size, self.pitch_matrix,
-                                                                   self.duration_matrix, None)
-            self.population.sort(key=lambda x: x.fitness, reverse=True)
-            selected_population = self.population[0:3]
-            self.update_matrices(selected_population)
 
-            avg_fitness = sum(map(lambda x: x.fitness, selected_population)) / len(selected_population)
-            print(f"Iteration {i} done")
+            self.population.sort(key=lambda x: x.fitness, reverse=True)
+
+            selected_population = self.population[0:40]
+            children = []
+            for j in range(1, len(selected_population), 2):
+                p1 = selected_population[j - 1]
+                p2 = selected_population[j]
+                c1, c2 = crossover.measure_crossover(p1, p2)
+                mutation.applyMutation(c1)
+                mutation.applyMutation(c2)
+                fitness.set_fitness(c1)
+                fitness.set_fitness(c2)
+                children.append(c1)
+                children.append(c2)
+
+            avg_fitness = sum(map(lambda x: x.fitness, self.population)) / len(self.population)
             print(f"Average fitness: {avg_fitness}")
+
+            # self.update_matrices(selected_population[0:5])
+            # New generation:
+            # Selected population
+            # Children of selection
+            # Newly sampled individuals
+            self.population = []
+            self.population.extend(children)
+            self.population.extend(initialisation.initialize_population(60, self.pitch_matrix, self.duration_matrix, None))
+
+            print(f"Iteration {i} done")
 
         print('Done evolving, playing songs')
         for j in self.population[0:4]:
             print(j)
-        musicPlayer.play(self.population)
+        musicPlayer.play_music_xml(self.population[0:4])
 
     def run_interactively(self, pitch_matrix=None, duration_matrix=None, init_vector=None):
         print('Starting generation')
@@ -83,7 +107,9 @@ class Simulation:
                                                                self.pitch_matrix,
                                                                self.duration_matrix, None)
 
-        return self.population
+        self.population.sort(key=lambda x: x.fitness, reverse=True)
+
+        return self.population[0:self.selection_size]
 
     def update_matrices(self, selection):
         selected_population_pitches = []

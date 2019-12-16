@@ -7,7 +7,7 @@ class MusicWindowViewModel:
             parent,
             pieces: [Individual],
             curr_piece: Individual = None,
-            options = None
+            options=None
     ):
         self.parent = parent
         self.pieces  = pieces

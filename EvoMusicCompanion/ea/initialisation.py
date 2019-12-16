@@ -91,8 +91,85 @@ def initialize_population_interval(population_size, interval_matrix, duration_ma
     return population
 
 
+def get_duration_for_measure(duration_matrix):
+    dur_counter = 0.0
+    durations = []
+    while dur_counter < 1.0:
+        # 1. Get initial duration
+        if dur_counter == 0.0:
+            new_d = get_random_transition(duration_matrix, None)
+            new_d = duration.Duration(new_d, None)
+            dur_counter += new_d.duration_value
+            durations.append(new_d)
+            continue
+
+        # 2. Keep generating duration until we reach maximum duration
+        new_d = get_random_transition(duration_matrix, durations[-1].duration_name)
+        new_d = duration.Duration(new_d, None)
+
+        # 3. If adding next one exceeds: Either lengthen the last note or add a rest
+        (exceeds, remaining) = exceeds_duration(new_d.duration_value, dur_counter)
+        if exceeds and remaining > 0:
+            break
+        dur_counter += new_d.duration_value
+
+        # Append to durations
+        durations.append(new_d)
+
+    return durations
+
+
+def get_notes_by_duration(durations, pitch_matrix, prev_measure: Measure = None):
+    notes = []
+    for i in range(len(durations)):
+        curr_dur = durations[i]
+        if i == 0:
+            prev_pitch = None
+            if prev_measure is not None:
+                prev_pitch = prev_measure.notes[-1].pitch
+            curr_pitch = get_random_transition(pitch_matrix, prev_pitch)
+            n = Note(curr_pitch, curr_dur)
+            notes.append(n)
+            continue
+        curr_pitch = get_random_transition(pitch_matrix, notes[-1].pitch)
+        n = Note(curr_pitch, curr_dur)
+        notes.append(n)
+    return notes
+
+
+def exceeds_duration(new_duration, curr_duration):
+    # Check how much duration exceeds when adding the new duration
+    total_duration = curr_duration + new_duration
+
+    max_duration_left = 1.0 - curr_duration
+    # If this is more than 1.0, we can decrease the length of this duration or we have to remove it
+    if total_duration > 1.0:
+        # If there is still room for another note, change it to that duration
+        if max_duration_left > 0.0:
+            return True, max_duration_left
+        # Else we do not want to add this note
+        else:
+            return True, 0.0
+    return False, 0.0
+
+
 def initialize_population(population_size, pitch_matrix, duration_matrix, init_vector) -> [Individual]:
     population = []
+
+    for i in range(population_size):
+        measures: [Measure] = []
+        for j in range(constants.NUM_OF_MEASURES):
+            measure_durations = get_duration_for_measure(duration_matrix)
+            measure_notes = get_notes_by_duration(measure_durations, pitch_matrix)
+            m = Measure(measure_notes, 0, None)
+            measures.append(m)
+        new_individual = individual.Individual(measures=measures, fitness=0)
+        population.append(new_individual)
+
+    # Assign chords to each individual and set fitness
+    population = set_chords_for_population(population)
+    fitness.set_fitness_for_population(population)
+    return population
 
     for i in range(population_size):
         curr_indiv_measures: [Measure] = []
@@ -100,17 +177,24 @@ def initialize_population(population_size, pitch_matrix, duration_matrix, init_v
             notes_in_measure: [Note] = []
             # Should change this to while duration < measurelength
             while len(notes_in_measure) < 32:
-                is_initial_note = len(notes_in_measure) == 0 or (len(notes_in_measure) == 1 and constants.N_GRAM == 'trigram')
+                is_initial_note = len(notes_in_measure) == 0 or (
+                        len(notes_in_measure) == 1 and constants.N_GRAM == 'trigram')
                 if is_initial_note:
                     next_duration_type = get_random_transition(duration_matrix, None)
-                    if init_vector is None:
+
+                    # If we have a previous measure, we take the last note of the previous measure
+                    if len(curr_indiv_measures) > 0 and constants.N_GRAM == 'bigram':
+                        prev_pitch = curr_indiv_measures[-1].notes[-1].pitch
+                        next_pitch = get_random_transition(pitch_matrix, prev_pitch)
+
+                    elif init_vector is None:
                         next_pitch = get_random_transition(pitch_matrix, None)
-                        next_duration_type = get_random_transition(duration_matrix, None)
                     else:
                         next_pitch = init_first_note(init_vector)
                 else:
                     if constants.N_GRAM == 'trigram':
-                        prev_durations = (notes_in_measure[-1].duration.duration_name, notes_in_measure[-2].duration.duration_name)
+                        prev_durations = (
+                            notes_in_measure[-1].duration.duration_name, notes_in_measure[-2].duration.duration_name)
                         prev_notes = (notes_in_measure[-2].pitch, notes_in_measure[-1].pitch)
                     else:
                         prev_durations = notes_in_measure[-1].duration.duration_name
@@ -142,40 +226,40 @@ def initialize_population(population_size, pitch_matrix, duration_matrix, init_v
         population.append(new_individual)
 
     # Assign chords to each individual and set fitness
-    population = set_chords(population)
+    population = set_chords_for_population(population)
     fitness.set_fitness(population)
 
     return population
 
 
-def set_chords(population: [Individual]):
-    chords = [['C3', 'E3', 'G3'], ['F3', 'A3', 'C3'], ['G3', 'B3', 'D3']]
-    counter = 0
+def set_chords_for_population(population: [Individual]):
     for i in population:
-        for j in i.measures:
-            j.set_chord(chords[counter])
-            counter += 1
-            if counter == 3:
-                counter = 0
+        set_chords(i)
     return population
 
 
-def exceeds_duration(notes, new_duration) -> (bool, float):
-    # Check how much duration exceeds when adding the new duration
-    prev_total_duration = sum([i.duration_value for i in [j.duration for j in notes]])
-    total_duration = prev_total_duration + new_duration.duration_value
+def set_chords(individual: Individual):
+    chords = [['C3', 'E3', 'G3'], ['F3', 'A3', 'C3'], ['G3', 'B3', 'D3'], ['C3', 'E3', 'G3']]
+    for j in range(len(individual.measures)):
+        individual.measures[j].set_chord(chords[j])
 
-    max_duration_left = 1.0 - prev_total_duration
-    # If this is more than 1.0, we can decrease the length of this duration or we have to remove it
-    if total_duration > 1.0:
-        # If there is still room for another note, change it to that duration
-        if max_duration_left > 0.0:
-            return True, max_duration_left
-        # Else we do not want to add this note
-        else:
-            return True, 0.0
 
-    return False, 0.0
+# def exceeds_duration(notes, new_duration) -> (bool, float):
+#     # Check how much duration exceeds when adding the new duration
+#     prev_total_duration = sum([i.duration_value for i in [j.duration for j in notes]])
+#     total_duration = prev_total_duration + new_duration.duration_value
+#
+#     max_duration_left = 1.0 - prev_total_duration
+#     # If this is more than 1.0, we can decrease the length of this duration or we have to remove it
+#     if total_duration > 1.0:
+#         # If there is still room for another note, change it to that duration
+#         if max_duration_left > 0.0:
+#             return True, max_duration_left
+#         # Else we do not want to add this note
+#         else:
+#             return True, 0.0
+#
+#     return False, 0.0
 
 
 def initialize_population_by_template(population_size, template, mode, matrix):
@@ -195,48 +279,3 @@ def initialize_population_by_template(population_size, template, mode, matrix):
                 notes.append(next_pitch)
         population.append(notes)
     return population
-
-
-def get_pitch_transition_by_contour(pitch, contour, matrix):
-    transitions = matrix[pitch]
-
-    t_contour = {}
-
-    for k, v in transitions.iteritems():
-        if k == ' ':
-            continue
-        if contour == 'h':
-            if music21.note.Note(k) > music21.note.Note(pitch):
-                t_contour[k] = v
-        elif contour == 'l':
-            if music21.note.Note(k) < music21.note.Note(pitch):
-                t_contour[k] = v
-        elif contour == 'b':
-            if music21.note.Note(k) >= music21.note.Note(pitch):
-                t_contour[k] = v
-        elif contour == 'p':
-            if music21.note.Note(k) <= music21.note.Note(pitch):
-                t_contour[k] = v
-        elif contour == 'e':
-            if music21.note.Note(k) == music21.note.Note(pitch):
-                t_contour[k] = v
-        else:
-            t_contour[k] = v
-
-    rng = random.random()
-    p_sum = 0.0
-    # Normalize probability
-    p_total = sum(t_contour.values())
-
-    for k in t_contour:
-        norm_p = t_contour[k] / p_total
-        t_contour[k] = norm_p
-
-        if p_sum < rng < p_sum + norm_p:
-            return k
-        else:
-            p_sum += t_contour[k]
-
-    print(f'rng: {rng}')
-    print(f'p_sum: {p_sum}')
-    print('P does not sum to 1.0')

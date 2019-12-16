@@ -1,9 +1,20 @@
-from music21 import *
+from music21 import note, chord, stream, duration, interval, midi
 from ea import individual
 from ea.individual import Measure, Note
 
 
 def play(population: [individual.Individual]):
+    s = getPopulationScore(population)
+    player = midi.realtime.StreamPlayer(s)
+    player.play()
+
+
+def play_music_xml(population: [individual.Individual]):
+    s = getPopulationScore(population)
+    s.show('musicxml')
+
+
+def getPopulationScore(population: [individual.Individual]):
     s = stream.Score(id='mainScore')
     part = stream.Part(id='part0')
     part1 = stream.Part(id='part1')
@@ -14,6 +25,7 @@ def play(population: [individual.Individual]):
             chord_measure = stream.Measure(i + 1)
             if m.chord is not None:
                 chord_measure.append(chord.Chord(m.chord, quarterLength=4.0))
+            duration_count = 0.0
             # For each note
             for j in m.notes:
                 if j.pitch == 'REST':
@@ -23,16 +35,17 @@ def play(population: [individual.Individual]):
                     n = note.Note(j.pitch)
                     n.duration = duration.Duration(quarterLength=j.duration.duration_value / 0.25)
                 measure.append(n)
+                duration_count += j.duration.duration_value
+            # Add rest if measure is not filled
+            if duration_count < 1.0:
+                print(f"Exeeded duration of measure by {1.0 - duration_count}")
+                measure[len(measure)-1].duration.quarterLength += (1.0 - duration_count) / 0.25
 
             part.append(measure)
             part1.append(chord_measure)
     s.append(part)
     s.append(part1)
-
-    print(f'key = {s.analyze("key")}')
-
-    player = midi.realtime.StreamPlayer(s)
-    player.play()
+    return s
 
 
 def play_intervals(population: [individual.Individual]):
@@ -108,10 +121,19 @@ def play_pitches(population):
 
 def play_measure(measure: Measure):
     s = stream.Score(id="mainScore")
-    part = stream.Part(id="part0")
+
+    notes_part = stream.Part(id="part0")
     m = convert_measure_to_music21_measure(measure)
-    part.append(m)
-    s.append(part)
+    notes_part.append(m)
+    s.append(notes_part)
+
+    print(measure.chord)
+    chord_part = stream.Part(id="part1")
+    chord_measure = stream.Measure(1)
+    chord_measure.append(chord.Chord(measure.chord, quarterLength=4.0))
+    chord_part.append(chord_measure)
+    s.append(chord_part)
+
     player = midi.realtime.StreamPlayer(s)
     player.play()
 

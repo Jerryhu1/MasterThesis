@@ -10,7 +10,6 @@ class MusicPlayerThread(QThread):
         self.musicType = musicType
 
     def run(self):
-
         if self.musicType == 'measure':
             musicPlayer.play_measure(self.piece)
         elif self.musicType == 'piece':

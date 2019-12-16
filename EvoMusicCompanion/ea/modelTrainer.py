@@ -50,11 +50,11 @@ def get_bigram_matrix(items):
 
 
 def get_corpus():
-    curr_corpus = corpus.search('mozart', 'composer')
+    curr_corpus = corpus.corpora.LocalCorpus('wiki').metadataBundle
 
     scores = []
 
-    for c in curr_corpus:
+    for c in curr_corpus[0:20]:
         score = c.parse()
         # Tranpose to C
         score = util.transpose_piece(score, 'C')
