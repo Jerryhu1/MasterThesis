@@ -1,14 +1,14 @@
-from music21 import pitch
+from music21 import pitch, interval
 
 from ea import util
-from ea.individual import Individual
+from ea.individual import Individual, Note
 
 major_scale = ['A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5']
 
 
 def set_fitness(individual):
     individual.fitness = (
-            (0.5 * narmour(individual))
+            (narmour(individual))
             + fitness_chord_tone_beat(individual)
             + fitness_chord_tone(individual)
             + last_note_closure(individual)
@@ -57,6 +57,17 @@ def last_note_closure(individual: Individual):
     return 0
 
 
+def intervallic_patterns(individual: Individual):
+    notes: [Note] = individual.get_flattened_notes()
+    for i in range(1, len(notes)):
+        n1 = notes[i-1].to_music21_note()
+        n2 = notes[i].to_music21_note()
+        i1 = interval.Interval(n1, n2)
+
+
+
+
+
 def sign(x):
     if x < 0:
         return -1
@@ -64,6 +75,8 @@ def sign(x):
         return 0
     if x > 0:
         return 1
+
+
 
 
 def narmour(individual: Individual):

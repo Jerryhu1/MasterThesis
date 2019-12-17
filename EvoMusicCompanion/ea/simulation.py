@@ -32,7 +32,7 @@ class Simulation:
 
         print('Starting evolution')
         self.population = initialisation.initialize_population(self.population_size, self.pitch_matrix,
-                                                               self.duration_matrix, None)
+                                                               self.duration_matrix)
         for i in range(iterations):
 
             self.population.sort(key=lambda x: x.fitness, reverse=True)
@@ -60,7 +60,8 @@ class Simulation:
             # Newly sampled individuals
             self.population = []
             self.population.extend(children)
-            self.population.extend(initialisation.initialize_population(60, self.pitch_matrix, self.duration_matrix, None))
+            self.population.extend(
+                initialisation.initialize_population(60, self.pitch_matrix, self.duration_matrix, None))
 
             print(f"Iteration {i} done")
 
@@ -85,7 +86,7 @@ class Simulation:
             self.duration_matrix = duration_matrix
 
         self.population = initialisation.initialize_population(self.population_size,
-                                                               self.pitch_matrix, self.duration_matrix, init_vector)
+                                                               self.pitch_matrix, self.duration_matrix)
         self.population.sort(key=lambda x: x.fitness, reverse=True)
         return self.population
 
@@ -93,10 +94,6 @@ class Simulation:
         self.population = initialisation.initialize_population_by_template(self.population_size, template, 'contour',
                                                                            pitch_matrix)
         return self.population
-
-    def update_with_measures(self, selection: [individual.Measure]):
-        [y.pitch for y in selection.notes]
-        map(lambda m: m.notes, selection)
 
     def update(self, selection: [individual.Individual] = None):
         if selection is None:
@@ -124,6 +121,5 @@ class Simulation:
             selected_population_pitches.append(pitch_measure)
             selected_population_durations.append(duration_measure)
 
-        # TODO: Update duration matrix
         self.pitch_matrix = modelTrainer.update_matrix(selected_population_pitches, self.pitch_matrix, 0.8)
         # self.duration_matrix = modelTrainer.update_matrix(selected_population_durations, self.duration_matrix, 0.8)

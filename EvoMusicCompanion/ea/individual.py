@@ -1,4 +1,4 @@
-from ea import constants
+from ea import constants, util
 import music21
 import re
 
@@ -22,6 +22,13 @@ class Individual:
         dur = [j.duration for j in [i for i in self.notes]]
         return sum(constants.flatten(dur))
 
+    def get_flattened_notes(self):
+        notes = list(map(lambda x: x.notes, self.measures))
+        return util.flatten(notes)
+
+    def get_notes_per_measure(self):
+        return list(map(lambda x: x.notes, self.measures))
+
 
 class Note:
 
@@ -39,6 +46,11 @@ class Note:
 
     def __gt__(self, other):
         return music21.note.Note(self.pitch) > music21.note.Note(other.pitch)
+
+    def to_music21_note(self) -> music21.note.Note:
+        n = music21.note.Note(self.pitch)
+        n.duration = self.duration.duration_value / 0.25
+        return n
 
 
 class Measure:

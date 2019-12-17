@@ -3,10 +3,15 @@ from collections import defaultdict
 import collections
 import numpy as np
 import pandas as pd
+import os.path
 from ea import util, individual, constants
 import nltk
 
 from music21 import *
+
+pitch_matrix_path = './pitch_matrix.csv'
+duration_matrix_path = './duration_matrix.csv'
+symbol_matrix_path = './symbol_matrix.csv'
 
 
 def flatten(l):
@@ -14,6 +19,10 @@ def flatten(l):
 
 
 def train_pitch_matrix(scores):
+
+    if os.path.exists(pitch_matrix_path):
+        return pd.read_csv(pitch_matrix_path, index_col=0)
+
     if scores is None:
         scores = get_corpus()
 
@@ -50,7 +59,9 @@ def get_bigram_matrix(items):
 
 
 def get_corpus():
-    curr_corpus = corpus.corpora.LocalCorpus('wiki').metadataBundle
+    curr_corpus = corpus.corpora.CoreCorpus()
+    curr_corpus = curr_corpus.search('mozart', 'composer')
+
 
     scores = []
 
@@ -148,6 +159,10 @@ def get_probabilistic_matrix(matrix):
 
 
 def train_duration_matrix(scores):
+
+    if os.path.exists(duration_matrix_path):
+        return pd.read_csv(duration_matrix_path, index_col=0)
+
     if scores is None:
         scores = get_corpus()
     # set containing all possible notes for matrix creation
