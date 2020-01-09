@@ -68,6 +68,12 @@ class Measure:
         if chord is not None and len(chord) != 0:
             self.chordWithoutOctave = list(map(lambda x: re.sub('\d+', '', x), chord))
 
+    def get_total_duration(self):
+        counter = 0.0
+        for n in self.notes:
+            counter += n.duration.duration_value
+        return counter
+
     def __str__(self):
         return f"Notes: {self.notes}, Chord: {self.chord}, Fitness: {self.fitness}, User score: {self.user_score}"
 

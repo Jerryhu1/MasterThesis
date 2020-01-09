@@ -1,8 +1,9 @@
 class Duration:
 
-    def __init__(self, duration_name, duration_value):
+    def __init__(self, duration_name, duration_value, is_tie=False):
         self.duration_value = duration_value
         self.duration_name = duration_name
+        self.is_tie = is_tie
 
         if duration_value == 0.0 or duration_value is None:
             if duration_name == 'quarter':

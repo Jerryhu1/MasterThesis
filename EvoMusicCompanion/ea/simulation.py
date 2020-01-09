@@ -10,7 +10,7 @@ class Simulation:
     selection_size = 5
     simulation = None
     tournament_size = 4
-    elitism_size = 5
+    elitism_size = 10
 
     def __init__(self, learning_rate, population_size, duration_matrix=None, pitch_matrix=None):
         if self.simulation is not None:
@@ -59,8 +59,10 @@ class Simulation:
                 children.append(c1)
                 children.append(c2)
 
-            avg_fitness = sum(map(lambda x: x.fitness, self.population)) / len(self.population)
+            fitnesses = list(map(lambda x: x.fitness, self.population))
+            avg_fitness = sum(fitnesses) / len(self.population)
             print(f"Average fitness: {avg_fitness}")
+            print(f"Max fitness: {max(fitnesses)}")
 
             # self.update_matrices(selected_population[0:5])
             # New generation:
@@ -72,7 +74,6 @@ class Simulation:
             self.population.extend(children)
             self.population.extend(
                 initialisation.initialize_population(self.population_size - len(self.population), self.pitch_matrix, self.duration_matrix))
-
             print(f"Iteration {i} done")
         print('-------------------------------------------------')
         print('Done evolving, playing songs')
@@ -87,7 +88,7 @@ class Simulation:
         print(f'Tournament size: {self.tournament_size}')
         print(f'Model updating: None, ratio = N/A')
 
-        musicPlayer.play_music_xml([self.population[0]])
+        musicPlayer.play_music_xml(self.population[0:4])
 
     def run_interactively(self, pitch_matrix=None, duration_matrix=None):
         print('Starting generation')

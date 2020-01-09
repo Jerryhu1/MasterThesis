@@ -15,7 +15,7 @@ def applyMutation(individual: Individual, elitist_population: [Individual]):
 
     p1 = 0.2
     p2 = 0.2
-    p3 = 0.4
+    p3 = 0.3
 
     p = rng.random()
 
@@ -32,7 +32,7 @@ def elitist_mutation(individual: Individual, elitist_population: [Individual]):
     measure = rng.choice(e_individual.measures)
 
     m_measure = rng.randrange(len(individual.measures))
-    individual.measures[m_measure].notes = measure.notes
+    individual.measures[m_measure].notes = copy.deepcopy(measure.notes)
 
 
 def swap_measure(individual: Individual):
@@ -82,7 +82,7 @@ def mutate_note_pitch(size: int, individual: Individual):
         note = rng.choice(m.notes)
 
 
-def tranpose_interval_measure(individual: Individual):
+def transpose_interval_measure(individual: Individual):
     m: Measure = rng.choice(individual.measures)
     first_pitch = None
     new_first_pitch = None
@@ -112,3 +112,4 @@ def reverse_measure(individual: Individual):
     for i in range(len(m.notes)):
         m.notes[i] = m_copy.notes[j]
         j -= 1
+

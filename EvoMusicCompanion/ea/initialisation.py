@@ -19,8 +19,10 @@ def initialize_population(population_size, pitch_matrix, duration_matrix) -> [In
             # If there was a previous measure, we take the transitions from last note of that measure
             if len(measures) > 0:
                 prev_measure = measures[-1]
-
-            measure_notes = get_notes_by_duration(measure_durations, pitch_matrix, prev_measure)
+            if constants.N_GRAM == 'bigram':
+                measure_notes = get_notes_by_duration(measure_durations, pitch_matrix, prev_measure)
+            else:
+                measure_notes = get_notes_by_duration_trigram(measure_durations, pitch_matrix, prev_measure)
             m = Measure(measure_notes, 0, None)
             measures.append(m)
         new_individual = individual.Individual(measures=measures, fitness=0)
@@ -133,12 +135,13 @@ def get_duration_for_measure(duration_matrix, prev_measure: individual.Measure):
             durations.append(new_d)
             continue
 
-        # 2. Keep generating duration until we reach maSximum duration
+        # 2. Keep generating duration until we reach maximum duration
         new_d = get_random_transition(duration_matrix, durations[-1].duration_name)
         new_d = duration.Duration(new_d, None)
 
         # 3. If adding next one exceeds: Either lengthen the last note or add a rest
         (exceeds, remaining) = exceeds_duration(new_d.duration_value, dur_counter)
+
         if exceeds and remaining > 0:
 
             break
@@ -163,6 +166,37 @@ def get_notes_by_duration(durations, pitch_matrix, prev_measure: Measure = None)
             notes.append(n)
             continue
         curr_pitch = get_random_transition(pitch_matrix, notes[-1].pitch)
+        n = Note(curr_pitch, curr_dur)
+        notes.append(n)
+    return notes
+
+
+def get_notes_by_duration_trigram(durations, pitch_matrix, prev_measure):
+    notes = []
+    for i in range(len(durations)):
+        curr_dur = durations[i]
+        if i == 0:
+            if prev_measure is not None:
+                p1 = prev_measure.notes[len(prev_measure.notes)-2].pitch
+                p2 = prev_measure.notes[-1].pitch
+                curr_pitch = get_random_transition(pitch_matrix, (p1, p2))
+            else:
+                curr_pitch = get_random_transition(pitch_matrix, None)
+            n = Note(curr_pitch, curr_dur)
+            notes.append(n)
+        elif i == 1:
+            if prev_measure is not None:
+                p1 = prev_measure.notes[-1]
+                p2 = notes[-1]
+                curr_pitch = get_random_transition(pitch_matrix, (p1, p2))
+            else:
+                curr_pitch = get_random_transition(pitch_matrix, None)
+            n = Note(curr_pitch, curr_dur)
+            notes.append(n)
+        else:
+            p1 = notes[len(notes)-2].pitch
+            p2 = notes[-1].pitch
+            curr_pitch = get_random_transition(pitch_matrix, (p1, p2))
         n = Note(curr_pitch, curr_dur)
         notes.append(n)
     return notes

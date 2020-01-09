@@ -1,6 +1,7 @@
 from ea import fitness, initialisation
 from ea.individual import Individual, Measure, Note
 from random import Random
+import copy
 
 rng = Random()
 
@@ -39,15 +40,18 @@ def two_point(p1, p2):
     c1 = Individual([], None)
     c2 = Individual([], None)
 
+    p1_measures = copy.deepcopy(p1.measures)
+    p2_measures = copy.deepcopy(p2.measures)
+
     for i in range(0, point1):
-        c1.measures.append(p1.measures[i])
-        c2.measures.append(p2.measures[i])
+        c1.measures.append(p1_measures[i])
+        c2.measures.append(p2_measures[i])
     for i in range(point1, point2):
-        c1.measures.append(p2.measures[i])
-        c2.measures.append(p1.measures[i])
-    for i in range(point2, len(p1.measures)):
-        c1.measures.append(p1.measures[i])
-        c2.measures.append(p2.measures[i])
+        c1.measures.append(p2_measures[i])
+        c2.measures.append(p1_measures[i])
+    for i in range(point2, len(p1_measures)):
+        c1.measures.append(p1_measures[i])
+        c2.measures.append(p2_measures[i])
     return c1, c2
 
 
@@ -56,13 +60,15 @@ def one_point(p1, p2):
 
     c1 = Individual([], None)
     c2 = Individual([], None)
+    p1_measures = copy.deepcopy(p1.measures)
+    p2_measures = copy.deepcopy(p2.measures)
 
     for i in range(0, point1):
-        c1.measures.append(p1.measures[i])
-        c2.measures.append(p2.measures[i])
-    for i in range(point1, len(p1.measures)):
-        c1.measures.append(p2.measures[i])
-        c2.measures.append(p1.measures[i])
+        c1.measures.append(p1_measures[i])
+        c2.measures.append(p2_measures[i])
+    for i in range(point1, len(p1_measures)):
+        c1.measures.append(p2_measures[i])
+        c2.measures.append(p1_measures[i])
     return c1, c2
 
 

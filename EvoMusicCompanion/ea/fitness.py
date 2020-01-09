@@ -16,10 +16,12 @@ def print_fitness_values(individual):
     last_note = last_note_closure(individual)
     long_note = long_notes(individual)
     duration = duration_patterns(individual)
+    duration_change = duration_changes(individual)
     intervals = interval_size(individual)
     rests = consecutive_rests(individual)
     interval_resolution = interval_resolution_strong_beat(individual)
 
+    total = get_fitness(individual)
     print(f'Interval pattern fitness: {int_pattern}')
     print(f'Duration pattern fitness: {duration}')
     print(f'Chord tone beat fitness: {chord_tone_beat}')
@@ -29,11 +31,13 @@ def print_fitness_values(individual):
     print(f'Interval size fitness: {intervals}')
     print(f'Consecutive rests fitness: {rests}')
     print(f'Interval resolution fitness: {interval_resolution}')
-    print(f'Total fitness: {individual.fitness}')
+    print(f'duration change fitness: {duration_change}')
+    print(f'Total fitness in indiv: {individual.fitness}')
+    print(f'Total fitness: {total}')
 
 
-w1 = 0.5
-w2 = 0.5
+w1 = 1.0
+w2 = 1.0
 w3 = 1.0
 w4 = 1.0
 w5 = 1.0
@@ -49,11 +53,13 @@ def get_fitness(individual):
     last_note = last_note_closure(individual)
     long_note = long_notes(individual)
     duration = duration_patterns(individual)
+    duration_change = duration_changes(individual)
     intervals = interval_size(individual)
     rests = consecutive_rests(individual)
     interval_resolution = interval_resolution_strong_beat(individual)
 
-    return int_pattern + chord_tone + chord_tone_beat + last_note + long_note + duration + intervals + rests + interval_resolution
+    return int_pattern + chord_tone + chord_tone_beat + last_note + long_note + duration + intervals + rests + \
+           interval_resolution + duration_change
 
 
 def set_fitness(individual):
@@ -115,10 +121,9 @@ def interval_resolution_strong_beat(individual):
         strong_beats = [0.0, 0.75]
         dur_counter = 0.0
         for i in range(1, len(m.notes)):
-            if m.notes[i-1].pitch == 'REST' or m.notes[i].pitch == 'REST':
+            if m.notes[i - 1].pitch == 'REST' or m.notes[i].pitch == 'REST':
                 continue
-            divider_counter += 1
-            dur_counter += m.notes[i-1].duration.duration_value
+            dur_counter += m.notes[i - 1].duration.duration_value
 
             n1 = pitch.Pitch(m.notes[i - 1].pitchWithoutOctave)
             n2 = pitch.Pitch(m.notes[i].pitchWithoutOctave)
@@ -127,6 +132,7 @@ def interval_resolution_strong_beat(individual):
             i2 = interval.Interval(root, n2)
             # Strong beat, resolve
             if dur_counter in strong_beats:
+                divider_counter += 1
                 if i1.name == 'M2' and i2.name == 'P1':
                     score += 2.0
                 elif i1.name == 'P4' and i2.name == 'M3':
@@ -137,16 +143,19 @@ def interval_resolution_strong_beat(individual):
                     score += 2.0
                 elif i1.name == 'M3' and i2.name == 'P1':
                     score += 1.0
+                else:
+                    score -= 1.0
+    if divider_counter == 0.0:
+        return 0.0
     return score / divider_counter
 
 
 def interval_size(individual):
-
     score = 0
     notes: [Note] = individual.get_flattened_notes()
 
     for i in range(1, len(notes)):
-        if notes[i-1].pitch == 'REST' or notes[i].pitch == 'REST':
+        if notes[i - 1].pitch == 'REST' or notes[i].pitch == 'REST':
             continue
         n1 = notes[i - 1].to_music21_note()
         n2 = notes[i].to_music21_note()
@@ -154,7 +163,7 @@ def interval_size(individual):
         i1 = interval.Interval(n1, n2)
         if i1.semitones >= 9:
             score -= 1.0
-    return score / (len(notes) / 2.0)
+    return score / len(notes) - 1
 
 
 def fitness_chord_tone_beat(individual: Individual):
@@ -234,6 +243,20 @@ def intervallic_patterns(individual: Individual):
         fitness += (score * v) / divider
 
     return fitness
+
+
+def duration_changes(individual: Individual):
+    notes = individual.get_flattened_notes()
+    durations = list(map(lambda x: x.duration.duration_value, notes))
+    counter = 0
+    for i in range(1, len(durations)):
+        d_1 = durations[i - 1]
+        d_2 = durations[i]
+
+        if d_1 / d_2 >= 4.0:
+            counter += 1
+
+    return - (counter / (len(notes) - 1))
 
 
 def duration_patterns(individual: Individual):
