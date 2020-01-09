@@ -1,7 +1,5 @@
 from music21 import interval, converter, pitch, note
 
-from ea.individual import Individual
-
 
 def transpose_piece(piece, key):
     k = piece.analyze('key')

@@ -49,7 +49,7 @@ class Note:
 
     def to_music21_note(self) -> music21.note.Note:
         n = music21.note.Note(self.pitch)
-        n.duration = self.duration.duration_value / 0.25
+        n.duration = music21.duration.Duration(self.duration.duration_value / 0.25)
         return n
 
 

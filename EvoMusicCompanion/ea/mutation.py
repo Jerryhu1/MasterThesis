@@ -1,14 +1,38 @@
 from random import Random
 
+from music21 import pitch
+from music21.interval import Interval
+
 from ea import initialisation, simulation
-from ea.individual import Individual, Measure, Note
+from ea.individual import Individual, Measure
+import copy
 
 rng = Random()
 
 
-def applyMutation(individual: Individual):
-    if rng.random() > 0.1:
+def applyMutation(individual: Individual, elitist_population: [Individual]):
+    mutations = [swap_measure, reverse_measure, elitist_population]
+
+    p1 = 0.2
+    p2 = 0.2
+    p3 = 0.4
+
+    p = rng.random()
+
+    if p < p1:
         swap_measure(individual)
+    if p < p2:
+        reverse_measure(individual)
+    if p < p3:
+        elitist_mutation(individual, elitist_population)
+
+
+def elitist_mutation(individual: Individual, elitist_population: [Individual]):
+    e_individual: Individual = rng.choice(elitist_population)
+    measure = rng.choice(e_individual.measures)
+
+    m_measure = rng.randrange(len(individual.measures))
+    individual.measures[m_measure].notes = measure.notes
 
 
 def swap_measure(individual: Individual):
@@ -41,7 +65,7 @@ def change_rest_or_note(individual: Individual):
     note_index = rng.randrange(len(notes))
     note = notes[note_index]
     if note_index > 0:
-        prev_note = notes[note_index-1]
+        prev_note = notes[note_index - 1]
     else:
         prev_note = None
 
@@ -57,3 +81,34 @@ def mutate_note_pitch(size: int, individual: Individual):
         m = rng.choice(individual.measures)
         note = rng.choice(m.notes)
 
+
+def tranpose_interval_measure(individual: Individual):
+    m: Measure = rng.choice(individual.measures)
+    first_pitch = None
+    new_first_pitch = None
+    for n in m.notes:
+        if n.pitch == 'REST':
+            continue
+        # If we find the first pitch, we tranpose this first
+        if first_pitch is None:
+            first_pitch = n.pitch
+            intvl = Interval(rng.choice([2, 4, 5]))
+            curr_octave = n.pitch[1]
+            new_first_pitch = intvl.transposePitch(pitch.Pitch(f'C{curr_octave}'), reverse=rng.choice([True, False]))
+            n.pitch = new_first_pitch.nameWithOctave
+            continue
+        # The remaining notes will be transposed with the same intervals as previously
+        curr_pitch = pitch.Pitch(n.pitch)
+        intvl_first_pitch = Interval(pitch.Pitch(first_pitch), curr_pitch)
+        # Transpose the new first pitch to the previous interval
+        new_pitch = intvl_first_pitch.transposePitch(new_first_pitch)
+        n.pitch = new_pitch.nameWithOctave
+
+
+def reverse_measure(individual: Individual):
+    m: Measure = rng.choice(individual.measures)
+    m_copy = copy.deepcopy(m)
+    j = len(m.notes) - 1
+    for i in range(len(m.notes)):
+        m.notes[i] = m_copy.notes[j]
+        j -= 1

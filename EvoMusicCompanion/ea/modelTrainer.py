@@ -33,7 +33,9 @@ def train_pitch_matrix(scores):
     else:
         matrix = get_bigram_matrix(notes)
 
-    return get_probabilistic_matrix(matrix)
+    matrix = get_probabilistic_matrix(matrix)
+    matrix.to_csv(pitch_matrix_path)
+    return matrix
 
 
 def get_trigram_matrix(items):
@@ -59,13 +61,12 @@ def get_bigram_matrix(items):
 
 
 def get_corpus():
-    curr_corpus = corpus.corpora.CoreCorpus()
-    curr_corpus = curr_corpus.search('mozart', 'composer')
-
+    curr_corpus = corpus.corpora.LocalCorpus('wiki')
+    curr_corpus = curr_corpus.metadataBundle
 
     scores = []
 
-    for c in curr_corpus[0:20]:
+    for c in curr_corpus[0:100]:
         score = c.parse()
         # Tranpose to C
         score = util.transpose_piece(score, 'C')
@@ -162,7 +163,7 @@ def train_duration_matrix(scores):
 
     if os.path.exists(duration_matrix_path):
         return pd.read_csv(duration_matrix_path, index_col=0)
-
+    print(test)
     if scores is None:
         scores = get_corpus()
     # set containing all possible notes for matrix creation
@@ -188,7 +189,9 @@ def train_duration_matrix(scores):
     else:
         matrix = get_bigram_matrix(all_durations)
 
-    return get_probabilistic_matrix(matrix)
+    matrix = get_probabilistic_matrix(matrix)
+    matrix.to_csv(duration_matrix_path)
+    return matrix
 
 
 def train_interval_matrix(scores):

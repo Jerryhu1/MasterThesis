@@ -1,4 +1,4 @@
-NUM_OF_MEASURES = 4
+NUM_OF_MEASURES = 16
 N_GRAM = 'bigram'
 
 

@@ -45,9 +45,7 @@ def get_learning_rate(piece_score, measure_score):
 
 def get_num_score(score):
     if score == 5:
-        return 0.6
-    if score == 4:
-        return 0.4
+        return 0.8
     if score == 3:
-        return 0.2
+        return 0.3
     return 0.0

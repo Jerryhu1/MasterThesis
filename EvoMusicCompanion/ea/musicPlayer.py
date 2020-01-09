@@ -21,8 +21,8 @@ def getPopulationScore(population: [individual.Individual]):
     for i in range(len(population)):
         # For each measure
         for m in population[i].measures:
-            measure = stream.Measure(i + 1)
-            chord_measure = stream.Measure(i + 1)
+            measure = stream.Measure()
+            chord_measure = stream.Measure()
             if m.chord is not None:
                 chord_measure.append(chord.Chord(m.chord, quarterLength=4.0))
             duration_count = 0.0
@@ -38,7 +38,6 @@ def getPopulationScore(population: [individual.Individual]):
                 duration_count += j.duration.duration_value
             # Add rest if measure is not filled
             if duration_count < 1.0:
-                print(f"Exeeded duration of measure by {1.0 - duration_count}")
                 measure[len(measure)-1].duration.quarterLength += (1.0 - duration_count) / 0.25
 
             part.append(measure)

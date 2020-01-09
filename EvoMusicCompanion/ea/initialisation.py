@@ -11,8 +11,16 @@ def initialize_population(population_size, pitch_matrix, duration_matrix) -> [In
     for i in range(population_size):
         measures: [Measure] = []
         for j in range(constants.NUM_OF_MEASURES):
-            measure_durations = get_duration_for_measure(duration_matrix)
-            measure_notes = get_notes_by_duration(measure_durations, pitch_matrix)
+            if len(measures) > 0:
+                measure_durations = get_duration_for_measure(duration_matrix, measures[-1])
+            else:
+                measure_durations = get_duration_for_measure(duration_matrix, None)
+            prev_measure = None
+            # If there was a previous measure, we take the transitions from last note of that measure
+            if len(measures) > 0:
+                prev_measure = measures[-1]
+
+            measure_notes = get_notes_by_duration(measure_durations, pitch_matrix, prev_measure)
             m = Measure(measure_notes, 0, None)
             measures.append(m)
         new_individual = individual.Individual(measures=measures, fitness=0)
@@ -110,25 +118,29 @@ def initialize_population_interval(population_size, interval_matrix, duration_ma
     return population
 
 
-def get_duration_for_measure(duration_matrix):
+def get_duration_for_measure(duration_matrix, prev_measure: individual.Measure):
     dur_counter = 0.0
     durations = []
     while dur_counter < 1.0:
         # 1. Get initial duration
         if dur_counter == 0.0:
-            new_d = get_random_transition(duration_matrix, None)
+            if prev_measure is None:
+                new_d = get_random_transition(duration_matrix, None)
+            else:
+                new_d = get_random_transition(duration_matrix, prev_measure.notes[-1].duration.duration_name)
             new_d = duration.Duration(new_d, None)
             dur_counter += new_d.duration_value
             durations.append(new_d)
             continue
 
-        # 2. Keep generating duration until we reach maximum duration
+        # 2. Keep generating duration until we reach maSximum duration
         new_d = get_random_transition(duration_matrix, durations[-1].duration_name)
         new_d = duration.Duration(new_d, None)
 
         # 3. If adding next one exceeds: Either lengthen the last note or add a rest
         (exceeds, remaining) = exceeds_duration(new_d.duration_value, dur_counter)
         if exceeds and remaining > 0:
+
             break
         dur_counter += new_d.duration_value
 
@@ -179,6 +191,11 @@ def set_chords_for_population(population: [Individual]):
 
 
 def set_chords(individual: Individual):
-    chords = [['C3', 'E3', 'G3'], ['F3', 'A3', 'C3'], ['G3', 'B3', 'D3'], ['C3', 'E3', 'G3']]
+    chords = [['C3', 'E3', 'G3', 'B3'], ['F3', 'A3', 'C4', 'E4'], ['G3', 'B3', 'D4', 'F4'], ['C3', 'E3', 'G3', 'B3']]
+    counter = 0
     for j in range(len(individual.measures)):
-        individual.measures[j].set_chord(chords[j])
+        if counter == len(chords):
+            counter = 0
+        individual.measures[j].set_chord(chords[counter])
+        counter += 1
+
