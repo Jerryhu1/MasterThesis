@@ -129,6 +129,8 @@ def get_pitches_per_score(scores):
 
             for el in note_iterator:
                 if el.isRest:
+                    if el.duration.type == 'whole':
+                        continue
                     pitch_name = 'REST'
                 else:
                     if el.isChord:
