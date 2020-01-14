@@ -186,8 +186,8 @@ def get_notes_by_duration_trigram(durations, pitch_matrix, prev_measure):
             notes.append(n)
         elif i == 1:
             if prev_measure is not None:
-                p1 = prev_measure.notes[-1]
-                p2 = notes[-1]
+                p1 = prev_measure.notes[-1].pitch
+                p2 = notes[-1].pitch
                 curr_pitch = get_random_transition(pitch_matrix, (p1, p2))
             else:
                 curr_pitch = get_random_transition(pitch_matrix, None)

@@ -6,7 +6,6 @@ import pandas as pd
 import os.path
 from ea import util, individual, constants
 import nltk
-import csv
 
 from music21 import *
 
@@ -22,10 +21,8 @@ def flatten(l):
 def train_pitch_matrix(scores):
 
     if os.path.exists(pitch_matrix_path):
-        if constants.N_GRAM == 'bigram':
-            return pd.read_csv(pitch_matrix_path, index_col=0)
-        else:
-            return read_trigram()
+        return pd.read_csv(pitch_matrix_path, index_col=0)
+
     if scores is None:
         scores = get_corpus()
 
@@ -39,39 +36,6 @@ def train_pitch_matrix(scores):
     matrix = get_probabilistic_matrix(matrix)
     matrix.to_csv(pitch_matrix_path)
     return matrix
-
-
-def read_trigram():
-    with open(pitch_matrix_path) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        line_count = 0
-        first_row = []
-        second_row = []
-        matrix = defaultdict(lambda: defaultdict(lambda: 0))
-
-        for row in csv_reader:
-            curr_col = None
-            for j in range(len(row)):
-                if line_count == 0:
-                    if j == 0:
-                        first_row.append(None)
-                    else:
-                        first_row.append(row[j])
-                    continue
-                elif line_count == 1:
-                    if j == 0:
-                        second_row.append(None)
-                    else:
-                        second_row.append(row[j])
-                    continue
-                if j == 0:
-                    curr_col = row[j]
-                else:
-                    matrix[(first_row[j], second_row[j])][curr_col] = float(row[j])
-            line_count += 1
-
-    return pd.DataFrame(matrix)
-
 
 
 def get_trigram_matrix(items):
@@ -308,4 +272,3 @@ def update_matrix(samples, matrix, convergence_rate):
             new_matrix[i][j] = matrix[i][j] + (difference * convergence_rate)
 
     return new_matrix
-

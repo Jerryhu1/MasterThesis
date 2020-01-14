@@ -128,8 +128,6 @@ def interval_resolution_strong_beat(individual):
             root = pitch.Pitch('C')
             i1 = interval.Interval(root, n1)
             i2 = interval.Interval(root, n2)
-            print(i1)
-            print(dur_counter)
             # Strong beat, resolve
             if dur_counter in strong_beats:
                 divider_counter += 1
