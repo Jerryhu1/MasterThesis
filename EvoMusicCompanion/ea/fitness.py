@@ -1,8 +1,8 @@
 import collections
 
-from music21 import pitch, interval
+from music21 import pitch, interval, scale
 
-from ea import util
+from ea import util, constants
 from ea.individual import Individual, Note
 from nltk import ngrams
 
@@ -97,7 +97,6 @@ def long_notes(individual: Individual):
 def consecutive_rests(individual: Individual):
     measures = individual.measures
     fitness = 0
-    divider = 0.0
     for m in measures:
         counter = 0.0
         for n in range(len(m.notes)):
@@ -123,13 +122,14 @@ def interval_resolution_strong_beat(individual):
         for i in range(1, len(m.notes)):
             if m.notes[i - 1].pitch == 'REST' or m.notes[i].pitch == 'REST':
                 continue
-            dur_counter += m.notes[i - 1].duration.duration_value
 
             n1 = pitch.Pitch(m.notes[i - 1].pitchWithoutOctave)
             n2 = pitch.Pitch(m.notes[i].pitchWithoutOctave)
             root = pitch.Pitch('C')
             i1 = interval.Interval(root, n1)
             i2 = interval.Interval(root, n2)
+            print(i1)
+            print(dur_counter)
             # Strong beat, resolve
             if dur_counter in strong_beats:
                 divider_counter += 1
@@ -145,6 +145,7 @@ def interval_resolution_strong_beat(individual):
                     score += 1.0
                 else:
                     score -= 1.0
+            dur_counter += m.notes[i - 1].duration.duration_value
     if divider_counter == 0.0:
         return 0.0
     return score / divider_counter
@@ -216,33 +217,28 @@ def intervallic_patterns(individual: Individual):
     notes: [Note] = individual.get_flattened_notes()
     notes = list(filter(lambda x: x.pitch != 'REST', notes))
     intervals = []
-
     for i in range(1, len(notes)):
         n1 = notes[i - 1].to_music21_note()
         n2 = notes[i].to_music21_note()
-        i1 = interval.Interval(n1, n2)
-        intervals.append(i1.name)
-
+        n1_scalestep = get_scale_position(n1.nameWithOctave)
+        n2_scalestep = get_scale_position(n2.nameWithOctave)
+        scalestep_interval = n2_scalestep - n1_scalestep
+        intervals.append(scalestep_interval)
     pattern_length_counter = find_patterns(intervals)
     fitness = 0.0
     for k, v in pattern_length_counter.items():
-        score = 0.0
-        if k == 3:
-            score = 3.0
-        elif k == 4:
-            score = 4.0
-        elif k == 5:
-            score = 5.0
-        elif k == 6:
-            score = 6.0
-        elif k == 7:
-            score = 7.0
-        # Max of N bars x 16th notes in piece
-        max_notes = len(individual.measures) * 16
-        divider = max_notes / k
-        fitness += (score * v) / divider
+        # Maximum number of k length patterns in piece
+        divider = len(notes) - k + 1
+        fitness += v / divider
+    if fitness == 0.0:
+        return 0.0
+    return fitness / len(pattern_length_counter.items())
 
-    return fitness
+
+def get_scale_position(p):
+    if p in constants.C_MAJOR_SCALE:
+        return constants.C_MAJOR_SCALE.index(p)
+    return -1
 
 
 def duration_changes(individual: Individual):
@@ -266,25 +262,16 @@ def duration_patterns(individual: Individual):
     pattern_counter = find_patterns(durations)
     fitness = 0.0
     for k, v in pattern_counter.items():
-        score = 0.0
-        if k == 4:
-            score = 4.0
-        elif k == 5:
-            score = 5.0
-        elif k == 6:
-            score = 6.0
-        elif k == 7:
-            score = 7.0
-        max_notes = len(individual.measures) * 16
-        divider = max_notes / k
-        fitness += (score * v) / divider
+        divider = len(notes) - k + 1
+
+        fitness += v / divider
     if fitness == 0.0:
         return 0.0
-    return fitness / len(notes)
+    return fitness / len(pattern_counter.items())
 
 
 def find_patterns(sequence):
-    min_pattern_length = 4
+    min_pattern_length = 3
     max_pattern_length = 7
     min_support_count = 2
     k = min_pattern_length
@@ -294,8 +281,8 @@ def find_patterns(sequence):
         grams = ngrams(sequence, k)
         counter = collections.Counter(grams)
         for key, v in counter.items():
-            if v > min_support_count:
-                pattern_length_counter[k] += 1
+            if v >= min_support_count:
+                pattern_length_counter[k] += v
         k += 1
     return pattern_length_counter
 
