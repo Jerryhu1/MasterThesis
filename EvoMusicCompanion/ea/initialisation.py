@@ -143,11 +143,8 @@ def get_duration_for_measure(duration_matrix, prev_measure: individual.Measure):
         (exceeds, remaining) = exceeds_duration(new_d.duration_value, dur_counter)
 
         if exceeds and remaining > 0:
-
             break
         dur_counter += new_d.duration_value
-
-        # Append to durations
         durations.append(new_d)
 
     return durations

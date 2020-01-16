@@ -1,5 +1,5 @@
 NUM_OF_MEASURES = 16
-N_GRAM = 'trigram'
+N_GRAM = 'bigram'
 
 
 def flatten(l):

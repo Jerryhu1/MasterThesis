@@ -11,6 +11,7 @@ import csv
 from music21 import *
 
 pitch_matrix_path = './pitch_matrix.csv'
+bigram_pitch_matrix_path = './bigram_pitch_matrix.csv'
 duration_matrix_path = './duration_matrix.csv'
 symbol_matrix_path = './symbol_matrix.csv'
 
@@ -23,7 +24,7 @@ def train_pitch_matrix(scores):
 
     if os.path.exists(pitch_matrix_path):
         if constants.N_GRAM == 'bigram':
-            return pd.read_csv(pitch_matrix_path, index_col=0)
+            return pd.read_csv(bigram_pitch_matrix_path, index_col=0)
         else:
             return read_trigram()
     if scores is None:
