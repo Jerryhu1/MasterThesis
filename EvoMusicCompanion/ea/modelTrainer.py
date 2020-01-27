@@ -10,7 +10,7 @@ import csv
 
 from music21 import *
 
-pitch_matrix_path = './pitch_matrix.csv'
+trigram_pitch_matrix_path = './trigram_pitch_matrix.csv'
 bigram_pitch_matrix_path = './bigram_pitch_matrix.csv'
 duration_matrix_path = './duration_matrix.csv'
 symbol_matrix_path = './symbol_matrix.csv'
@@ -22,11 +22,14 @@ def flatten(l):
 
 def train_pitch_matrix(scores):
 
-    if os.path.exists(pitch_matrix_path):
-        if constants.N_GRAM == 'bigram':
+    if constants.N_GRAM == 'bigram':
+        if os.path.exists(bigram_pitch_matrix_path):
             return pd.read_csv(bigram_pitch_matrix_path, index_col=0)
-        else:
+    else:
+        if os.path.exists(trigram_pitch_matrix_path):
             return read_trigram()
+        else:
+            print('Could not find trigram path')
     if scores is None:
         scores = get_corpus()
 
@@ -38,12 +41,16 @@ def train_pitch_matrix(scores):
         matrix = get_bigram_matrix(notes)
 
     matrix = get_probabilistic_matrix(matrix)
-    matrix.to_csv(pitch_matrix_path)
+    #matrix.to_csv(pitch_matrix_path)
     return matrix
 
 
+def get_backoff_matrix():
+    return pd.read_csv(bigram_pitch_matrix_path, index_col=0)
+
+
 def read_trigram():
-    with open(pitch_matrix_path) as csv_file:
+    with open(trigram_pitch_matrix_path) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         first_row = []
@@ -118,6 +125,8 @@ def get_pitches_per_score(scores):
     for p in scores:
         curr_pitches = []
         # Get a part of the piece
+        if p is None:
+            continue
         for part in p.parts:
             measure_iterator = part.getElementsByClass(stream.Measure)
             if len(measure_iterator) > 0:
@@ -202,7 +211,6 @@ def train_duration_matrix(scores):
 
     if os.path.exists(duration_matrix_path):
         return pd.read_csv(duration_matrix_path, index_col=0)
-    print(test)
     if scores is None:
         scores = get_corpus()
     # set containing all possible notes for matrix creation

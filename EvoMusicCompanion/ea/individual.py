@@ -62,6 +62,8 @@ class Measure:
         self.chord = chord
         if chord is not None and len(chord) != 0:
             self.chordWithoutOctave = list(map(lambda x: re.sub('\d+', '', x), chord))
+        else:
+            self.chordWithoutOctave = []
 
     def set_chord(self, chord):
         self.chord = chord

@@ -4,6 +4,7 @@ from ea.individual import Individual
 
 class Simulation:
     pitch_matrix = None
+    backoff_matrix = None
     duration_matrix = None
     learning_rate = 0.5
     population_size = 10
@@ -23,9 +24,8 @@ class Simulation:
         self.elitist_population: [Individual] = []
         self.simulation = self
 
-    def run(self, iterations, pitch_matrix, duration_matrix):
+    def run(self, iterations, pitch_matrix, duration_matrix, backoff_matrix):
         print('Starting generation')
-
         if pitch_matrix is None:
             print('Training the pitch matrix, this might take a while')
             self.pitch_matrix = modelTrainer.train_pitch_matrix(None)
@@ -34,11 +34,14 @@ class Simulation:
             print('Training the duration matrix, this might take a while')
             self.duration_matrix = modelTrainer.train_duration_matrix(None)
 
+        if backoff_matrix is None:
+            self.backoff_matrix = modelTrainer.get_backoff_matrix()
+
         print('Initializing population')
 
         print('Starting evolution')
         self.population = initialisation.initialize_population(self.population_size, self.pitch_matrix,
-                                                               self.duration_matrix)
+                                                               self.duration_matrix, self.backoff_matrix)
         for i in range(iterations):
 
             self.population.sort(key=lambda x: x.fitness, reverse=True)
@@ -73,7 +76,8 @@ class Simulation:
             self.population.extend(self.elitist_population)
             self.population.extend(children)
             self.population.extend(
-                initialisation.initialize_population(self.population_size - len(self.population), self.pitch_matrix, self.duration_matrix))
+                initialisation.initialize_population(self.population_size - len(self.population), self.pitch_matrix,
+                                                     self.duration_matrix, self.backoff_matrix))
             print(f"Iteration {i} done")
         print('-------------------------------------------------')
         print('Done evolving, playing songs')
@@ -109,7 +113,6 @@ class Simulation:
         self.population.sort(key=lambda x: x.fitness, reverse=True)
         return self.population
 
-
     def update(self, selection: [individual.Individual] = None):
         if selection is None:
             self.update_matrices(self.population)
@@ -138,3 +141,75 @@ class Simulation:
 
         self.pitch_matrix = modelTrainer.update_matrix(selected_population_pitches, self.pitch_matrix, 0.8)
         # self.duration_matrix = modelTrainer.update_matrix(selected_population_durations, self.duration_matrix, 0.8)
+
+    def run_with_corpus(self, corpus: [Individual], iterations, pitch_matrix, duration_matrix, backoff_matrix):
+        print('Starting generation')
+        if pitch_matrix is None:
+            print('Training the pitch matrix, this might take a while')
+            self.pitch_matrix = modelTrainer.train_pitch_matrix(None)
+
+        if duration_matrix is None:
+            print('Training the duration matrix, this might take a while')
+            self.duration_matrix = modelTrainer.train_duration_matrix(None)
+
+        if backoff_matrix is None:
+            self.backoff_matrix = modelTrainer.get_backoff_matrix()
+
+        print('Initializing population')
+
+        print('Starting evolution')
+        self.population = corpus
+        init_pop = initialisation.initialize_population(self.population_size, self.pitch_matrix,
+                                                               self.duration_matrix, self.backoff_matrix)
+        self.population.extend(init_pop)
+        for i in range(iterations):
+
+            self.population.sort(key=lambda x: x.fitness, reverse=True)
+
+            selected_population = selection.tournament_selection(self.population, self.tournament_size)
+            sorted_selection = sorted(selected_population, key=lambda x: x.fitness, reverse=True)
+            self.elitist_population = sorted_selection[0:self.elitism_size]
+            children = []
+
+            for j in range(0, len(selected_population), 2):
+                p1 = selected_population[j - 1]
+                p2 = selected_population[j]
+                c1, c2 = crossover.measure_crossover(p1, p2)
+                mutation.applyMutation(c1, self.elitist_population)
+                mutation.applyMutation(c2, self.elitist_population)
+                fitness.set_fitness(c1)
+                fitness.set_fitness(c2)
+                children.append(c1)
+                children.append(c2)
+
+            fitnesses = list(map(lambda x: x.fitness, self.population))
+            avg_fitness = sum(fitnesses) / len(self.population)
+            print(f"Average fitness: {avg_fitness}")
+            print(f"Max fitness: {max(fitnesses)}")
+
+            # self.update_matrices(selected_population[0:5])
+            # New generation:
+            # Selected population
+            # Children of selection
+            # Newly sampled individuals
+            self.population = []
+            self.population.extend(self.elitist_population)
+            self.population.extend(children)
+            self.population.extend(
+                initialisation.initialize_population(self.population_size - len(self.population), self.pitch_matrix,
+                                                     self.duration_matrix, self.backoff_matrix))
+            print(f"Iteration {i} done")
+        print('-------------------------------------------------')
+        print('Done evolving, playing songs')
+        for j in range(len(self.population[0:4])):
+            ind = self.population[j]
+            print(f'Individual: {j}')
+            fitness.print_fitness_values(ind)
+            print(f' ')
+
+        print(f'Population size: {self.population_size}')
+        print(f'Elitist population size: {len(self.elitist_population)}')
+        print(f'Tournament size: {self.tournament_size}')
+        print(f'Model updating: None, ratio = N/A')
+
+        musicPlayer.play_music_xml(self.population[0:4])

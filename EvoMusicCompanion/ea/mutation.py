@@ -56,7 +56,7 @@ def swap_notes_in_measure(individual: Individual):
     n1 = notes[n_index1]
     n2 = notes[n_index2]
     individual.measures[m_index].notes[n_index1] = n2
-    individual.measures[m_index].notes[n_index2] = n2
+    individual.measures[m_index].notes[n_index2] = n1
 
 
 def change_rest_or_note(individual: Individual):

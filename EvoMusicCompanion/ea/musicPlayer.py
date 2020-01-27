@@ -1,6 +1,10 @@
 from music21 import note, chord, stream, duration, interval, midi
-from ea import individual
+from music21.stream import Score
+
+from ea import individual, fitness
 from ea.individual import Measure, Note
+
+
 
 
 def play(population: [individual.Individual]):
@@ -150,3 +154,39 @@ def convert_measure_to_music21_measure(m: Measure):
         measure.append(n_1)
 
     return measure
+
+
+def music21_score_to_individual(s: Score):
+    p = s.parts[0]
+    measures = p.getElementsByClass(stream.Measure)
+    new_measures = []
+    for m in range(len(measures)):
+        new_measure = individual.Measure([], 0, [])
+        m_notes = measures[m].notesAndRests
+        for n in m_notes:
+            if n.isRest:
+                if n.duration.type == 'whole':
+                    continue
+                pitch_name = 'REST'
+            elif n.isChord:
+                # Only 1 chord per measure :/
+                if len(new_measure.chord) > 0:
+                    continue
+                chord = []
+                for chord_note in n:
+                    chord.append(chord_note.pitch.nameWithOctave)
+                new_measure.chord = chord
+                continue
+            else:
+                pitch_name = n.nameWithOctave
+                if '-' in pitch_name or '##' in pitch_name:
+                    pitch_name = n.pitch.getEnharmonic().nameWithOctave
+            dur = duration.Duration(n.duration.type, None)
+            new_note = individual.Note(pitch_name, dur)
+            new_measure.notes.append(new_note)
+        if len(new_measure.notes) == 0:
+            continue
+        new_measures.append(new_measure)
+    indiv = individual.Individual(new_measures, 0.0)
+    fitness.set_fitness(indiv)
+    return indiv

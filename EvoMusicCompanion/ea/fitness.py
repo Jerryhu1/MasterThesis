@@ -75,23 +75,23 @@ def set_fitness_for_population(population: [Individual]):
 def long_notes(individual: Individual):
     measures = individual.measures
     fitness = 0
+    long_note_counter = 0.0
+
     for m in measures:
         measure_fitness = 0.0
-        long_note_counter = 0.0
         for n in m.notes:
+
             duration_name = n.duration.duration_name
             if duration_name == 'quarter' or duration_name == 'half':
                 long_note_counter += 1.0
                 if n.pitch == 'REST':
                     measure_fitness -= 1.0
-                if n.pitchWithoutOctave in m.chordWithoutOctave:
+                elif n.pitchWithoutOctave in m.chordWithoutOctave:
                     measure_fitness += 1.0
                 else:
-                    measure_fitness -= 1.0
-        if long_note_counter == 0:
-            continue
-        fitness += (measure_fitness / long_note_counter)
-    return fitness / len(individual.measures)
+                    measure_fitness -= 0.5
+                fitness += measure_fitness
+    return fitness / long_note_counter
 
 
 def consecutive_rests(individual: Individual):
@@ -116,37 +116,51 @@ def consecutive_rests(individual: Individual):
 def interval_resolution_strong_beat(individual):
     score = 0
     divider_counter = 0
-    for m in individual.measures:
-        strong_beats = [0.0, 0.75]
-        dur_counter = 0.0
-        for i in range(1, len(m.notes)):
-            if m.notes[i - 1].pitch == 'REST' or m.notes[i].pitch == 'REST':
-                continue
+    measures = individual.measures
+    strong_beats = [0.0, 0.5]
+    prev_measure_note = None
 
-            n1 = pitch.Pitch(m.notes[i - 1].pitchWithoutOctave)
-            n2 = pitch.Pitch(m.notes[i].pitchWithoutOctave)
-            root = pitch.Pitch('C')
-            i1 = interval.Interval(root, n1)
-            i2 = interval.Interval(root, n2)
+    for i in range(len(measures)):
+        m = measures[i]
+        dur_counter = 0.0
+        for j in range(-1, len(m.notes)):
+            if j == len(m.notes) - 1:
+                prev_measure_note = m.notes[j]
+                continue
+            if prev_measure_note is not None and j == -1:
+                n1 = prev_measure_note
+                n2 = m.notes[j]
+            elif j == -1 and prev_measure_note is None:
+                continue
+            else:
+                n1 = m.notes[j]
+                n2 = m.notes[j + 1]
+                dur_counter += n1.duration.duration_value
+
             # Strong beat, resolve
             if dur_counter in strong_beats:
+                p1 = pitch.Pitch(n1.pitchWithoutOctave)
+                p2 = pitch.Pitch(n2.pitchWithoutOctave)
+
+                root = pitch.Pitch('C')
+                i1 = interval.Interval(root, p1)
+                i2 = interval.Interval(root, p2)
+
                 divider_counter += 1
                 if i1.name == 'M2' and i2.name == 'P1':
-                    score += 2.0
+                    score += 1.0
                 elif i1.name == 'P4' and i2.name == 'M3':
-                    score += 2.0
+                    score += 1.0
                 elif i1.name == 'M6' and i2.name == 'P5':
-                    score += 1.0
+                    score += 0.5
                 elif i1.name == 'M7' and i2.name == 'P1':
-                    score += 2.0
-                elif i1.name == 'M3' and i2.name == 'P1':
                     score += 1.0
-                else:
-                    score -= 1.0
-            dur_counter += m.notes[i - 1].duration.duration_value
+                elif i1.name == 'M3' and i2.name == 'P1':
+                    score += 0.5
+
     if divider_counter == 0.0:
         return 0.0
-    return score / divider_counter
+    return score / (2 * len(individual.measures) - 1)
 
 
 def interval_size(individual):
@@ -162,7 +176,9 @@ def interval_size(individual):
         i1 = interval.Interval(n1, n2)
         if i1.semitones >= 9:
             score -= 1.0
-    return score / len(notes) - 1
+    if score == 0.0:
+        return 0.0
+    return score / (len(notes) - 1)
 
 
 def fitness_chord_tone_beat(individual: Individual):
@@ -180,7 +196,7 @@ def fitness_chord_tone_beat(individual: Individual):
     # 2 strong beats per measure
     if score == 0.0:
         return 0.0
-    return (score / 2) / len(individual.measures)
+    return score / (2*len(individual.measures))
 
 
 def fitness_chord_tone(individual: Individual):
@@ -201,6 +217,12 @@ def last_note_closure(individual: Individual):
     last_note = individual.measures[-1].notes[-1]
     last_pitch = last_note.pitchWithoutOctave
     last_chord = individual.measures[-1].chordWithoutOctave
+    counter = 2
+    while len(last_chord) == 0:
+        last_chord = individual.measures[len(individual.measures) - counter].chordWithoutOctave
+        counter += 1
+        if len(individual.measures) - counter == 0:
+            return 0.0
     score = 0
     if last_pitch == last_chord[0]:
         if last_note.duration.duration_value > 0.25:
@@ -225,6 +247,7 @@ def intervallic_patterns(individual: Individual):
     pattern_length_counter = find_patterns(intervals)
     fitness = 0.0
     for k, v in pattern_length_counter.items():
+        print((k, v))
         # Maximum number of k length patterns in piece
         divider = len(notes) - k + 1
         fitness += v / divider

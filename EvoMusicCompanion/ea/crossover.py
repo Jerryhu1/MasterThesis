@@ -1,7 +1,8 @@
-from ea import fitness, initialisation
-from ea.individual import Individual, Measure, Note
-from random import Random
 import copy
+from random import Random
+
+from ea import initialisation
+from ea.individual import Individual
 
 rng = Random()
 
@@ -25,7 +26,6 @@ def measure_crossover(p1: Individual, p2: Individual):
 
 def two_point(p1, p2):
     # one or two point crossover
-    p = rng.random()
     point1 = rng.randrange(1, len(p1.measures))
     point2 = rng.randrange(1, len(p1.measures))
 

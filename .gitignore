@@ -82,3 +82,7 @@ project/plugins/project/
 */music-analysis/midi
 
 EvoMusicCompanion/midi
+EvoMusicCompanion/gui/__pycache__/PlayControlBar.cpython-37.pyc
+EvoMusicCompanion/ea/__pycache__/
+EvoMusicCompanion/gui/__pycache__/
+EvoMusicCompanion/.ipynb_checkpoints/
