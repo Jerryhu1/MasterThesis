@@ -1,5 +1,6 @@
 from ea import individual, musicPlayer, modelTrainer, initialisation, crossover, mutation, fitness, selection
 from ea.individual import Individual
+import random
 
 
 class Simulation:
@@ -11,7 +12,7 @@ class Simulation:
     selection_size = 5
     simulation = None
     tournament_size = 4
-    elitism_size = 10
+    elitism_size = 5
 
     def __init__(self, learning_rate, population_size, duration_matrix=None, pitch_matrix=None):
         if self.simulation is not None:
@@ -44,54 +45,68 @@ class Simulation:
                                                                self.duration_matrix, self.backoff_matrix)
         for i in range(iterations):
 
+            #selected_population = selection.tournament_selection(self.population, self.tournament_size)
+            #sorted_selection = sorted(selected_population, key=lambda x: x.fitness, reverse=True)
+
             self.population.sort(key=lambda x: x.fitness, reverse=True)
+            self.elitist_population = self.population[0:self.elitism_size]
 
-            selected_population = selection.tournament_selection(self.population, self.tournament_size)
-            sorted_selection = sorted(selected_population, key=lambda x: x.fitness, reverse=True)
-            self.elitist_population = sorted_selection[0:self.elitism_size]
-            children = []
+            next_generation = []
+            #next_generation.extend(self.elitist_population)
+            random.shuffle(self.population)
 
-            for j in range(0, len(selected_population), 2):
-                p1 = selected_population[j - 1]
-                p2 = selected_population[j]
+            for j in range(0, len(self.population), 2):
+                family = []
+                p1 = self.population[j - 1]
+                p2 = self.population[j]
                 c1, c2 = crossover.measure_crossover(p1, p2)
                 mutation.applyMutation(c1, self.elitist_population)
                 mutation.applyMutation(c2, self.elitist_population)
                 fitness.set_fitness(c1)
                 fitness.set_fitness(c2)
-                children.append(c1)
-                children.append(c2)
+                family.extend([c1, c2, p1, p2])
+                family.sort(key=lambda x: x.fitness, reverse=True)
+                next_generation.extend(family[0:2])
 
-            fitnesses = list(map(lambda x: x.fitness, self.population))
-            avg_fitness = sum(fitnesses) / len(self.population)
-            print(f"Average fitness: {avg_fitness}")
-            print(f"Max fitness: {max(fitnesses)}")
+            next_generation.sort(key=lambda x: x.fitness, reverse=True)
+            next_generation = next_generation[0:self.population_size]
 
-            # self.update_matrices(selected_population[0:5])
+        # self.update_matrices(selected_population[0:5])
             # New generation:
             # Selected population
             # Children of selection
             # Newly sampled individuals
-            self.population = []
-            self.population.extend(self.elitist_population)
-            self.population.extend(children)
-            self.population.extend(
-                initialisation.initialize_population(self.population_size - len(self.population), self.pitch_matrix,
-                                                     self.duration_matrix, self.backoff_matrix))
+            self.population = next_generation
+            #self.population.extend(
+            #    initialisation.initialize_population(self.population_size - len(self.population), self.pitch_matrix,
+            #                                         self.duration_matrix, self.backoff_matrix))
+
+            fitnesses = list(map(lambda x: x.fitness, self.population))
+            avg_fitness = sum(fitnesses) / len(self.population)
+
             print(f"Iteration {i} done")
+            print(f"Average fitness: {avg_fitness}")
+            print(f"Max fitness: {max(fitnesses)}")
+            print(f"Min fitness: {min(fitnesses)}")
+            print(f"Population size: {len(self.population)}")
         print('-------------------------------------------------')
         print('Done evolving, playing songs')
-        for j in range(len(self.population[0:4])):
-            ind = self.population[j]
-            print(f'Individual: {j}')
-            fitness.print_fitness_values(ind)
-            print(f' ')
+        # for j in range(len(self.population[0:4])):
+        #     ind = self.population[j]
+        #     print(f'Individual: {j}')
+        #     fitness.print_fitness_values(ind)
+        #     print(f' ')
 
         print(f'Population size: {self.population_size}')
         print(f'Elitist population size: {len(self.elitist_population)}')
         print(f'Tournament size: {self.tournament_size}')
         print(f'Model updating: None, ratio = N/A')
-
+        play_pieces = [self.population[0], self.population[50], self.population[99]]
+        for j in range(len(play_pieces)):
+            ind = play_pieces[j]
+            print(f'Individual: {j}')
+            fitness.print_fitness_values(ind)
+            print(f' ')
         musicPlayer.play_music_xml(self.population[0:4])
 
     def run_interactively(self, pitch_matrix=None, duration_matrix=None):

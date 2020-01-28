@@ -78,19 +78,16 @@ def long_notes(individual: Individual):
     long_note_counter = 0.0
 
     for m in measures:
-        measure_fitness = 0.0
         for n in m.notes:
-
             duration_name = n.duration.duration_name
             if duration_name == 'quarter' or duration_name == 'half':
                 long_note_counter += 1.0
                 if n.pitch == 'REST':
-                    measure_fitness -= 1.0
+                    fitness -= 1.0
                 elif n.pitchWithoutOctave in m.chordWithoutOctave:
-                    measure_fitness += 1.0
+                    fitness += 1.0
                 else:
-                    measure_fitness -= 0.5
-                fitness += measure_fitness
+                    fitness -= 0.5
     return fitness / long_note_counter
 
 
@@ -136,6 +133,9 @@ def interval_resolution_strong_beat(individual):
                 n1 = m.notes[j]
                 n2 = m.notes[j + 1]
                 dur_counter += n1.duration.duration_value
+
+            if n1.pitch == "REST" or n2.pitch == "REST":
+                continue
 
             # Strong beat, resolve
             if dur_counter in strong_beats:
@@ -247,7 +247,6 @@ def intervallic_patterns(individual: Individual):
     pattern_length_counter = find_patterns(intervals)
     fitness = 0.0
     for k, v in pattern_length_counter.items():
-        print((k, v))
         # Maximum number of k length patterns in piece
         divider = len(notes) - k + 1
         fitness += v / divider
