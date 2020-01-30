@@ -1,7 +1,12 @@
-NUM_OF_MEASURES = 8
+NUM_OF_MEASURES = 4
 N_GRAM = 'trigram'
-
-
+LEARNING_RATE = 0.5
+POPULATION_SIZE = 100
+SELECTION_SIZE = 5
+TOURNAMENT_SIZE = 4
+ELITISM_SIZE = 5
+ITERATIONS = 10
+CROSSOVER = "UX"
 def flatten(l):
     return [item for sublist in l for item in sublist]
 

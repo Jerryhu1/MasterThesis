@@ -1,4 +1,6 @@
-from ea import individual, musicPlayer, modelTrainer, initialisation, crossover, mutation, fitness, selection
+from math import ceil
+
+from ea import individual, musicPlayer, modelTrainer, initialisation, crossover, mutation, fitness, selection, constants, metrics
 from ea.individual import Individual
 import random
 
@@ -7,25 +9,18 @@ class Simulation:
     pitch_matrix = None
     backoff_matrix = None
     duration_matrix = None
-    learning_rate = 0.5
-    population_size = 10
-    selection_size = 5
     simulation = None
-    tournament_size = 4
-    elitism_size = 5
 
-    def __init__(self, learning_rate, population_size, duration_matrix=None, pitch_matrix=None):
+    def __init__(self, duration_matrix=None, pitch_matrix=None):
         if self.simulation is not None:
             print('Two instances of simulation, killing one')
-        self.learning_rate = learning_rate
-        self.population_size = population_size
         self.duration_matrix = duration_matrix
         self.pitch_matrix = pitch_matrix
         self.population: [Individual] = []
         self.elitist_population: [Individual] = []
         self.simulation = self
 
-    def run(self, iterations, pitch_matrix, duration_matrix, backoff_matrix):
+    def run(self, pitch_matrix, duration_matrix, backoff_matrix):
         print('Starting generation')
         if pitch_matrix is None:
             print('Training the pitch matrix, this might take a while')
@@ -37,19 +32,21 @@ class Simulation:
 
         if backoff_matrix is None:
             self.backoff_matrix = modelTrainer.get_backoff_matrix()
+        initialisation.pitch_matrix = self.pitch_matrix
+        initialisation.duration_matrix= self.duration_matrix
+        initialisation.backoff_matrix = self.backoff_matrix
 
         print('Initializing population')
 
         print('Starting evolution')
-        self.population = initialisation.initialize_population(self.population_size, self.pitch_matrix,
-                                                               self.duration_matrix, self.backoff_matrix)
-        for i in range(iterations):
+        self.population = initialisation.initialize_population(constants.POPULATION_SIZE)
+        for i in range(constants.ITERATIONS):
 
             #selected_population = selection.tournament_selection(self.population, self.tournament_size)
             #sorted_selection = sorted(selected_population, key=lambda x: x.fitness, reverse=True)
 
             self.population.sort(key=lambda x: x.fitness, reverse=True)
-            self.elitist_population = self.population[0:self.elitism_size]
+            self.elitist_population = self.population[0:constants.ELITISM_SIZE]
 
             next_generation = []
             #next_generation.extend(self.elitist_population)
@@ -69,7 +66,7 @@ class Simulation:
                 next_generation.extend(family[0:2])
 
             next_generation.sort(key=lambda x: x.fitness, reverse=True)
-            next_generation = next_generation[0:self.population_size]
+            next_generation = next_generation[0:constants.POPULATION_SIZE]
 
         # self.update_matrices(selected_population[0:5])
             # New generation:
@@ -83,12 +80,13 @@ class Simulation:
 
             fitnesses = list(map(lambda x: x.fitness, self.population))
             avg_fitness = sum(fitnesses) / len(self.population)
-
+            metrics.write_population_metrics(i, self.population)
             print(f"Iteration {i} done")
-            print(f"Average fitness: {avg_fitness}")
-            print(f"Max fitness: {max(fitnesses)}")
-            print(f"Min fitness: {min(fitnesses)}")
-            print(f"Population size: {len(self.population)}")
+            # print(f"Average fitness: {avg_fitness}")
+            # print(f"Max fitness: {max(fitnesses)}")
+            # print(f"Min fitness: {min(fitnesses)}")
+            # print(f"Population size: {len(self.population)}")
+            # print(f"Proportion of equal individuals: {metrics.proportion_equal_to_highest_fitness(self.population)}")
         print('-------------------------------------------------')
         print('Done evolving, playing songs')
         # for j in range(len(self.population[0:4])):
@@ -97,17 +95,18 @@ class Simulation:
         #     fitness.print_fitness_values(ind)
         #     print(f' ')
 
-        print(f'Population size: {self.population_size}')
+        print(f'Population size: {constants.POPULATION_SIZE}')
         print(f'Elitist population size: {len(self.elitist_population)}')
-        print(f'Tournament size: {self.tournament_size}')
+        print(f'Tournament size: {constants.TOURNAMENT_SIZE}')
+        print(f'Iterations: {constants.ITERATIONS}')
         print(f'Model updating: None, ratio = N/A')
-        play_pieces = [self.population[0], self.population[50], self.population[99]]
-        for j in range(len(play_pieces)):
-            ind = play_pieces[j]
-            print(f'Individual: {j}')
-            fitness.print_fitness_values(ind)
-            print(f' ')
-        musicPlayer.play_music_xml(self.population[0:4])
+        #play_pieces = [self.population[0], self.population[ceil(len(self.population)/2)], self.population[-1]]
+        # for j in range(len(play_pieces)):
+        #     ind = play_pieces[j]
+        #     print(f'Individual: {j}')
+        #     fitness.print_fitness_values(ind)
+        #     print(f' ')
+        musicPlayer.write_music_midi(self.population[0:4])
 
     def run_interactively(self, pitch_matrix=None, duration_matrix=None):
         print('Starting generation')

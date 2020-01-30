@@ -143,22 +143,3 @@ class Metrics:
         self.allRatings = []
         self.timeElapsed = 0
 
-
-testIndividual = Individual(
-    measures=[
-        Measure(
-            [
-                Note('C#5', Duration('half', 0.5)),
-                Note('C#5', Duration('half', 0.5)),
-                Note('C#5', Duration('half', 0.5)),
-                Note('C#5', Duration('half', 0.5))
-            ], 0, None),
-        Measure(
-            [
-                Note('C#5', Duration('half', 0.5)),
-                Note('C#5', Duration('half', 0.5)),
-                Note('C#5', Duration('half', 0.5)),
-                Note('C#5', Duration('half', 0.5))
-            ], 0, None)
-    ], fitness=0
-)

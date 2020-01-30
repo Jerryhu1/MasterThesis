@@ -3,25 +3,29 @@ from music21 import pitch, interval
 import random
 from ea import fitness, duration, individual, constants
 
+pitch_matrix = None
+duration_matrix = None
+backoff_matrix = None
 
-def initialize_population(population_size, pitch_matrix, duration_matrix, backoff_matrix=None) -> [Individual]:
+
+def initialize_population(population_size) -> [Individual]:
     population = []
 
     for i in range(population_size):
         measures: [Measure] = []
         for j in range(constants.NUM_OF_MEASURES):
             if len(measures) > 0:
-                measure_durations = get_duration_for_measure(duration_matrix, measures[-1])
+                measure_durations = get_duration_for_measure(measures[-1])
             else:
-                measure_durations = get_duration_for_measure(duration_matrix, None)
+                measure_durations = get_duration_for_measure(None)
             prev_measure = None
             # If there was a previous measure, we take the transitions from last note of that measure
             if len(measures) > 0:
                 prev_measure = measures[-1]
             if constants.N_GRAM == 'bigram':
-                measure_notes = get_notes_by_duration(measure_durations, pitch_matrix, prev_measure)
+                measure_notes = get_notes_by_duration(measure_durations, prev_measure)
             else:
-                measure_notes = get_notes_by_duration_trigram(measure_durations, pitch_matrix, prev_measure, backoff_matrix)
+                measure_notes = get_notes_by_duration_trigram(measure_durations, prev_measure)
             m = Measure(measure_notes, 0, None)
             measures.append(m)
         new_individual = individual.Individual(measures=measures, fitness=0)
@@ -42,12 +46,18 @@ def random_sample(transitions):
 
     p_sum = 0.0
     for k, v in transitions.iteritems():
-        if p_sum < rng < p_sum + v:
-            return k
-        else:
-            p_sum += v
-
+        try:
+            if p_sum < rng < p_sum + v:
+                return k
+            else:
+                p_sum += v
+        except:
+            print('wt')
     return None
+
+
+def get_random_pitch_transition(start):
+    return get_random_transition(pitch_matrix, start, backoff_matrix)
 
 
 def get_random_transition(matrix, start, backoff_matrix=None):
@@ -68,62 +78,7 @@ def get_random_transition(matrix, start, backoff_matrix=None):
     return sample
 
 
-def initialize_population_interval(population_size, interval_matrix, duration_matrix, init_vector):
-    population = []
-
-    for i in range(population_size):
-        curr_indiv_notes: [[Note]] = []
-        init_note = None
-
-        for j in range(constants.NUM_OF_MEASURES):
-            measure: individual.Measure = None
-            # Should change this to while duration < measurelength
-            while len(measure) < 32:
-                is_initial_note = len(measure) == 0 or (len(measure) == 1 and constants.N_GRAM == 'trigram')
-                if is_initial_note:
-                    next_duration_type = get_random_transition(duration_matrix, None)
-                    next_pitch = init_first_note(init_vector)
-                    init_note = pitch.Pitch(next_pitch)
-                    next_interval = 'P1'
-                else:
-                    if constants.N_GRAM == 'trigram':
-                        prev_durations = (measure[-1].duration.duration_name, measure[-2].duration.duration_name)
-                        prev_notes = (measure[-2].pitch, measure[-1].pitch)
-                    else:
-                        prev_durations = measure[-1].duration.duration_name
-                        prev_notes = measure[-1]
-
-                    next_duration_type = get_random_transition(duration_matrix, prev_durations)
-                    next_interval = get_random_transition(interval_matrix, prev_notes.interval)
-
-                next_duration = duration.Duration(next_duration_type, None)
-
-                (exceeds, d) = exceeds_duration(measure, next_duration)
-                # If the maximum duration is exceeded by the next note, either shorten it or stop
-                # if exceeds and d >= 0.015625:
-                #     print(f"Exceeded max duration, decreasing it to {d}")
-                #     next_duration = duration.Duration(None, d)
-                if exceeds:
-                    break
-
-                intvl = interval.Interval(next_interval)
-                next_pitch = intvl.transposePitch(init_note).nameWithOctave
-                next_note = individual.Note(next_pitch, next_duration, intvl.name, init_note)
-                measure.append(next_note)
-
-            curr_indiv_notes.append(measure)
-
-        # Create individual and set fitness
-        new_individual = individual.Individual(notes=curr_indiv_notes, fitness=0)
-        f = fitness.get_fitness(new_individual)
-        new_individual.fitness = f
-
-        population.append(new_individual)
-
-    return population
-
-
-def get_duration_for_measure(duration_matrix, prev_measure: individual.Measure):
+def get_duration_for_measure(prev_measure: individual.Measure):
     dur_counter = 0.0
     durations = []
     while dur_counter < 1.0:
@@ -153,7 +108,7 @@ def get_duration_for_measure(duration_matrix, prev_measure: individual.Measure):
     return durations
 
 
-def get_notes_by_duration(durations, pitch_matrix, prev_measure: Measure = None):
+def get_notes_by_duration(durations, prev_measure: Measure = None):
     notes = []
     for i in range(len(durations)):
         curr_dur = durations[i]
@@ -171,13 +126,13 @@ def get_notes_by_duration(durations, pitch_matrix, prev_measure: Measure = None)
     return notes
 
 
-def get_notes_by_duration_trigram(durations, pitch_matrix, prev_measure, backoff_matrix = None):
+def get_notes_by_duration_trigram(durations, prev_measure):
     notes = []
     for i in range(len(durations)):
         curr_dur = durations[i]
         if i == 0:
             if prev_measure is not None:
-                p1 = prev_measure.notes[len(prev_measure.notes)-2].pitch
+                p1 = prev_measure.notes[len(prev_measure.notes) - 2].pitch
                 p2 = prev_measure.notes[-1].pitch
                 curr_pitch = get_random_transition(pitch_matrix, (p1, p2), backoff_matrix)
             else:
@@ -190,7 +145,7 @@ def get_notes_by_duration_trigram(durations, pitch_matrix, prev_measure, backoff
             else:
                 curr_pitch = get_random_transition(pitch_matrix, None)
         else:
-            p1 = notes[len(notes)-2].pitch
+            p1 = notes[len(notes) - 2].pitch
             p2 = notes[-1].pitch
             curr_pitch = get_random_transition(pitch_matrix, (p1, p2), backoff_matrix)
         n = Note(curr_pitch, curr_dur)
@@ -224,8 +179,8 @@ def set_chords(individual: Individual):
     chords = [['C3', 'E3', 'G3', 'B3'], ['F3', 'A3', 'C4', 'E4'], ['G3', 'B3', 'D4', 'F4'], ['C3', 'E3', 'G3', 'B3']]
     counter = 0
     for j in range(len(individual.measures)):
-        if counter == len(chords):
-            counter = 0
         individual.measures[j].set_chord(chords[counter])
-        counter += 1
-
+        if counter == len(chords) - 1:
+            counter = 0
+        else:
+            counter += 1

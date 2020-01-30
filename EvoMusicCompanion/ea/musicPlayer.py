@@ -1,16 +1,22 @@
 from music21 import note, chord, stream, duration, interval, midi
 from music21.stream import Score
 
-from ea import individual, fitness
+from ea import individual, fitness, constants
 from ea.individual import Measure, Note
-
-
+import datetime
 
 
 def play(population: [individual.Individual]):
     s = getPopulationScore(population)
     player = midi.realtime.StreamPlayer(s)
     player.play()
+
+
+def write_music_midi(population: [individual.Individual]):
+    path = f'./output/experiment-iterations={constants.ITERATIONS}-pop={constants.POPULATION_SIZE}-crossover={constants.CROSSOVER}-{datetime.datetime.now().date()}.mid'
+    s = getPopulationScore(population)
+    print(f'Writing to: {path}')
+    s.write("midi", path)
 
 
 def play_music_xml(population: [individual.Individual]):

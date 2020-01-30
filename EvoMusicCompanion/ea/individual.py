@@ -6,12 +6,13 @@ import re
 class Individual:
     user_score = 3
 
-    def __init__(self, measures, fitness):
+    def __init__(self, measures, fitness, fitnesses = None):
         self.measures = measures
         self.fitness = fitness
+        self.fitnesses = fitnesses
 
     def __str__(self):
-        return f"Measures: {self.measures} fitness: {self.fitness}"
+        return f"fitness: {self.fitness}, Measures: {self.measures} \n"
 
     __repr__ = __str__
 
@@ -40,7 +41,7 @@ class Note:
         self.interval_root = interval_root
 
     def __str__(self):
-        return f"({self.pitch}, {self.duration}, {self.interval}, {self.interval_root})"
+        return f"({self.pitch}, {self.duration})"
 
     __repr__ = __str__
 
@@ -51,6 +52,11 @@ class Note:
         n = music21.note.Note(self.pitch)
         n.duration = music21.duration.Duration(self.duration.duration_value / 0.25)
         return n
+
+    def set_pitch(self, pitch):
+        self.pitch = pitch
+        if pitch != "REST":
+            self.pitchWithoutOctave = re.sub('\d+', '', pitch)
 
 
 class Measure:
@@ -77,6 +83,6 @@ class Measure:
         return counter
 
     def __str__(self):
-        return f"Notes: {self.notes}, Chord: {self.chord}, Fitness: {self.fitness}, User score: {self.user_score}"
+        return f"Notes: {self.notes}, Chord: {self.chord} \n"
 
     __repr__ = __str__

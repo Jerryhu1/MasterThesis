@@ -13,13 +13,14 @@ def print_fitness_values(individual):
     int_pattern = intervallic_patterns(individual)
     chord_tone_beat = fitness_chord_tone_beat(individual)
     chord_tone = fitness_chord_tone(individual)
-    last_note = last_note_closure(individual)
+    last_note = cadence(individual)
     long_note = long_notes(individual)
     duration = duration_patterns(individual)
     duration_change = duration_changes(individual)
     intervals = interval_size(individual)
     rests = consecutive_rests(individual)
     interval_resolution = interval_resolution_strong_beat(individual)
+    consecutive_notes = similar_notes(individual)
 
     total = get_fitness(individual)
     print(f'Interval pattern fitness: {int_pattern}')
@@ -32,6 +33,7 @@ def print_fitness_values(individual):
     print(f'Consecutive rests fitness: {rests}')
     print(f'Interval resolution fitness: {interval_resolution}')
     print(f'duration change fitness: {duration_change}')
+    print(f'Consecutive notes fitness: {consecutive_notes}')
     print(f'Total fitness in indiv: {individual.fitness}')
     print(f'Total fitness: {total}')
 
@@ -50,20 +52,51 @@ def get_fitness(individual):
     int_pattern = intervallic_patterns(individual)
     chord_tone_beat = fitness_chord_tone_beat(individual)
     chord_tone = fitness_chord_tone(individual)
-    last_note = last_note_closure(individual)
+    last_note = cadence(individual)
     long_note = long_notes(individual)
     duration = duration_patterns(individual)
     duration_change = duration_changes(individual)
     intervals = interval_size(individual)
     rests = consecutive_rests(individual)
     interval_resolution = interval_resolution_strong_beat(individual)
+    consecutive_notes = similar_notes(individual)
 
     return int_pattern + chord_tone + chord_tone_beat + last_note + long_note + duration + intervals + rests + \
-           interval_resolution + duration_change
+           interval_resolution + duration_change + consecutive_notes
+
+def get_fitness_dic(individual):
+    int_pattern = intervallic_patterns(individual)
+    chord_tone_beat = fitness_chord_tone_beat(individual)
+    chord_tone = fitness_chord_tone(individual)
+    last_note = cadence(individual)
+    long_note = long_notes(individual)
+    duration = duration_patterns(individual)
+    duration_change = duration_changes(individual)
+    intervals = interval_size(individual)
+    rests = consecutive_rests(individual)
+    interval_resolution = interval_resolution_strong_beat(individual)
+    consecutive_notes = similar_notes(individual)
+
+    dic = {
+        "C_TONE" : chord_tone,
+        "C_TONE_B": chord_tone_beat,
+        "CADENCE": last_note,
+        "L_NOTE": long_note,
+        "I_RES": interval_resolution,
+        "L_INT": intervals,
+        "L_DUR": duration_change,
+        "CONS_R": rests,
+        "CONS_N": consecutive_notes,
+        "PATTERN_D": duration,
+        "PATTERN_SD": int_pattern
+    }
+
+    return dic
 
 
 def set_fitness(individual):
     individual.fitness = get_fitness(individual)
+    individual.fitnesses = get_fitness_dic(individual)
 
 
 def set_fitness_for_population(population: [Individual]):
@@ -88,6 +121,8 @@ def long_notes(individual: Individual):
                     fitness += 1.0
                 else:
                     fitness -= 0.5
+    if long_note_counter == 0 or fitness == 0:
+        return 0.0
     return fitness / long_note_counter
 
 
@@ -213,7 +248,7 @@ def fitness_chord_tone(individual: Individual):
     return total_count / len(individual.measures)
 
 
-def last_note_closure(individual: Individual):
+def cadence(individual: Individual):
     last_note = individual.measures[-1].notes[-1]
     last_pitch = last_note.pitchWithoutOctave
     last_chord = individual.measures[-1].chordWithoutOctave
@@ -229,6 +264,8 @@ def last_note_closure(individual: Individual):
             score += 1.0
         else:
             score += 0.5
+    else:
+        return -1.0
 
     return score
 
@@ -288,6 +325,21 @@ def duration_patterns(individual: Individual):
     if fitness == 0.0:
         return 0.0
     return fitness / len(pattern_counter.items())
+
+
+def similar_notes(individual: Individual):
+    notes_per_measure = individual.get_notes_per_measure()
+    fitness = 0.0
+    for m in notes_per_measure:
+        consecutive_notes_count = 0
+        prev_note = m[0].pitch
+        for i in range(1,len(m)):
+            curr_note = m[i].pitch
+            if prev_note == curr_note:
+                consecutive_notes_count += 1
+            prev_note = curr_note
+        fitness -= consecutive_notes_count / len(m)
+    return fitness / len(individual.measures)
 
 
 def find_patterns(sequence):

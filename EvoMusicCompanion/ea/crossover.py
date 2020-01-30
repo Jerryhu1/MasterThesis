@@ -1,7 +1,7 @@
 import copy
 from random import Random
 
-from ea import initialisation
+from ea import initialisation, constants
 from ea.individual import Individual
 
 rng = Random()
@@ -9,17 +9,23 @@ rng = Random()
 
 def measure_crossover(p1: Individual, p2: Individual):
     # No crossover possible from first and last indices
-
-    # one or two point crossover
-    p = rng.random()
-    if p > 0.5:
-        c1, c2 = two_point(p1, p2)
+    if constants.CROSSOVER == "UX":
+        c1, c2 = uniform(p1, p2)
+   # one or two point crossover
     else:
-        c1, c2 = one_point(p1, p2)
+        p = rng.random()
+        if constants.NUM_OF_MEASURES > 2:
+            if p > 0.5:
+                c1, c2 = two_point(p1, p2)
+            else:
+                c1, c2 = one_point(p1, p2)
+        else:
+            c1, c2 = one_point(p1, p2)
+
 
     # Set the chords correctly
-    initialisation.set_chords(c1)
-    initialisation.set_chords(c2)
+    #initialisation.set_chords(c1)
+    #initialisation.set_chords(c2)
 
     return c1, c2
 
@@ -56,7 +62,10 @@ def two_point(p1, p2):
 
 
 def one_point(p1, p2):
-    point1 = rng.randrange(1, len(p1.measures))
+    if constants.NUM_OF_MEASURES == 2:
+        point1 = 1
+    else:
+        point1 = rng.randrange(1, len(p1.measures))
 
     c1 = Individual([], None)
     c2 = Individual([], None)
@@ -71,6 +80,23 @@ def one_point(p1, p2):
         c2.measures.append(p1_measures[i])
     return c1, c2
 
+
+def uniform(p1, p2):
+    c1 = Individual([], None)
+    c2 = Individual([], None)
+    p1_measures = copy.deepcopy(p1.measures)
+    p2_measures = copy.deepcopy(p2.measures)
+
+    for i in range(len(p1_measures)):
+        p = rng.choice([True, False])
+        if p:
+            c1.measures.append(p2_measures[i])
+            c2.measures.append(p1_measures[i])
+        else:
+            c1.measures.append(p1_measures[i])
+            c2.measures.append(p2_measures[i])
+
+    return c1,c2
 
 # Measures with same chord are exchanged
 def measure_exchange(p1: Individual, p2: Individual):
