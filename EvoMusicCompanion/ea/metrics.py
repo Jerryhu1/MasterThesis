@@ -57,16 +57,17 @@ def write_population_metrics(iteration, population: [Individual]):
     for i in range(len(data)):
         if isinstance(data[i], float):
             data[i] = round(data[i], 3)
+    folder = f'./output/experiment-iterations={constants.ITERATIONS}-pop={constants.POPULATION_SIZE}'
+    file = f'/experiment-crossover={constants.CROSSOVER}-{datetime.datetime.now().date()}.csv'
 
-    path = f'./output/experiment-iterations={constants.ITERATIONS}-pop={constants.POPULATION_SIZE}-crossover={constants.CROSSOVER}-{datetime.datetime.now().date()}.csv'
-
-    if not os.path.exists(path):
-        with open(path, mode='w') as file:
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+        with open(folder + file, mode='w') as file:
             writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, lineterminator = '\n')
             writer.writerow(header)
             writer.writerow(data)
     else:
-        with open(path, mode='a') as file:
+        with open(folder + file, mode='a') as file:
             writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, lineterminator = '\n')
             writer.writerow(data)
 
