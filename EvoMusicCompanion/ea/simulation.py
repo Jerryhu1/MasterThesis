@@ -106,6 +106,8 @@ class Simulation:
         #     print(f'Individual: {j}')
         #     fitness.print_fitness_values(ind)
         #     print(f' ')
+        self.population.sort(key=lambda x: x.fitness, reverse=True)
+
         musicPlayer.write_music_midi(self.population[0:4])
 
     def run_interactively(self, pitch_matrix=None, duration_matrix=None):

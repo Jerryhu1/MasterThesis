@@ -46,18 +46,21 @@ def two_point(p1, p2):
     c1 = Individual([], None)
     c2 = Individual([], None)
 
-    p1_measures = copy.deepcopy(p1.measures)
-    p2_measures = copy.deepcopy(p2.measures)
+    p1_copy = copy.deepcopy(p1)
+    p2_copy = copy.deepcopy(p2)
 
     for i in range(0, point1):
-        c1.measures.append(p1_measures[i])
-        c2.measures.append(p2_measures[i])
+        c1.measures.append(p1_copy.measures[i])
+        c2.measures.append(p2_copy.measures[i])
     for i in range(point1, point2):
-        c1.measures.append(p2_measures[i])
-        c2.measures.append(p1_measures[i])
-    for i in range(point2, len(p1_measures)):
-        c1.measures.append(p1_measures[i])
-        c2.measures.append(p2_measures[i])
+        c1.measures.append(p2_copy.measures[i])
+        c2.measures.append(p1_copy.measures[i])
+    for i in range(point2, len(p1_copy.measures)):
+        c1.measures.append(p1_copy.measures[i])
+        c2.measures.append(p2_copy.measures[i])
+
+    if c1.measures[0] is p1.measures[0]:
+        print("Child measure has reference to parent measure")
     return c1, c2
 
 
@@ -69,40 +72,38 @@ def one_point(p1, p2):
 
     c1 = Individual([], None)
     c2 = Individual([], None)
-    p1_measures = copy.deepcopy(p1.measures)
-    p2_measures = copy.deepcopy(p2.measures)
+    p1_copy = copy.deepcopy(p1)
+    p2_copy = copy.deepcopy(p2)
 
     for i in range(0, point1):
-        c1.measures.append(p1_measures[i])
-        c2.measures.append(p2_measures[i])
-    for i in range(point1, len(p1_measures)):
-        c1.measures.append(p2_measures[i])
-        c2.measures.append(p1_measures[i])
+        c1.measures.append(p1_copy.measures[i])
+        c2.measures.append(p2_copy.measures[i])
+    for i in range(point1, len(p1_copy.measures)):
+        c1.measures.append(p2_copy.measures[i])
+        c2.measures.append(p1_copy.measures[i])
+
+    if c1.measures[0] is p1.measures[0]:
+        print("Child measure has reference to parent measure")
     return c1, c2
 
 
 def uniform(p1, p2):
     c1 = Individual([], None)
     c2 = Individual([], None)
-    p1_measures = copy.deepcopy(p1.measures)
-    p2_measures = copy.deepcopy(p2.measures)
+    p1_copy = copy.deepcopy(p1)
+    p2_copy = copy.deepcopy(p2)
 
-    for i in range(len(p1_measures)):
+    for i in range(len(p1_copy.measures)):
         p = rng.choice([True, False])
         if p:
-            c1.measures.append(p2_measures[i])
-            c2.measures.append(p1_measures[i])
+            c1.measures.append(p2_copy.measures[i])
+            c2.measures.append(p1_copy.measures[i])
         else:
-            c1.measures.append(p1_measures[i])
-            c2.measures.append(p2_measures[i])
+            c1.measures.append(p1_copy.measures[i])
+            c2.measures.append(p2_copy.measures[i])
+
+    if c1.measures[0] is p1.measures[0]:
+        print("Child measure has reference to parent measure")
 
     return c1,c2
-
-# Measures with same chord are exchanged
-def measure_exchange(p1: Individual, p2: Individual):
-    idx = rng.randrange(len(p1.measures))
-    m1 = p1.measures[idx]
-    m2 = p2.measures[idx]
-    p1.measures[idx] = m2
-    p2.measures[idx] = m1
 

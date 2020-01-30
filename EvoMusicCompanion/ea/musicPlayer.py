@@ -13,7 +13,7 @@ def play(population: [individual.Individual]):
 
 
 def write_music_midi(population: [individual.Individual]):
-    path = f'./output/experiment-iterations={constants.ITERATIONS}-pop={constants.POPULATION_SIZE}-crossover={constants.CROSSOVER}-{datetime.datetime.now().date()}.mid'
+    path = f'./output/experiment-iterations={constants.ITERATIONS}-pop={constants.POPULATION_SIZE}/experiment-crossover={constants.CROSSOVER}-{datetime.datetime.now().date()}.mid'
     s = getPopulationScore(population)
     print(f'Writing to: {path}')
     s.write("midi", path)
