@@ -57,6 +57,8 @@ class Note:
         self.pitch = pitch
         if pitch != "REST":
             self.pitchWithoutOctave = re.sub('\d+', '', pitch)
+        else:
+            self.pitchWithoutOctave = "REST"
 
 
 class Measure:

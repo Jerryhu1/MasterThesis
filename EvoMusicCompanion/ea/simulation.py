@@ -82,6 +82,7 @@ class Simulation:
             avg_fitness = sum(fitnesses) / len(self.population)
             metrics.write_population_metrics(i, self.population)
             print(f"Iteration {i} done")
+            print(f"Max chord beat fitness {self.population[0].fitnesses['C_TONE_B']}")
             # print(f"Average fitness: {avg_fitness}")
             # print(f"Max fitness: {max(fitnesses)}")
             # print(f"Min fitness: {min(fitnesses)}")
@@ -100,7 +101,7 @@ class Simulation:
         print(f'Tournament size: {constants.TOURNAMENT_SIZE}')
         print(f'Iterations: {constants.ITERATIONS}')
         print(f'Model updating: None, ratio = N/A')
-        #play_pieces = [self.population[0], self.population[ceil(len(self.population)/2)], self.population[-1]]
+        play_pieces = [self.population[0], self.population[ceil(len(self.population)/2)], self.population[-1]]
         # for j in range(len(play_pieces)):
         #     ind = play_pieces[j]
         #     print(f'Individual: {j}')
@@ -108,7 +109,7 @@ class Simulation:
         #     print(f' ')
         self.population.sort(key=lambda x: x.fitness, reverse=True)
 
-        musicPlayer.write_music_midi(self.population[0:4])
+        musicPlayer.write_music_midi(play_pieces)
 
     def run_interactively(self, pitch_matrix=None, duration_matrix=None):
         print('Starting generation')

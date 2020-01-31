@@ -82,7 +82,7 @@ def one_point(p1, p2):
         c1.measures.append(p2_copy.measures[i])
         c2.measures.append(p1_copy.measures[i])
 
-    if c1.measures[0] is p1.measures[0]:
+    if c1.measures[0] is p1.measures[0] or c1.measures is p2.measures[0]:
         print("Child measure has reference to parent measure")
     return c1, c2
 
@@ -102,7 +102,7 @@ def uniform(p1, p2):
             c1.measures.append(p1_copy.measures[i])
             c2.measures.append(p2_copy.measures[i])
 
-    if c1.measures[0] is p1.measures[0]:
+    if c1.measures[0] is p1.measures[0] or c1.measures[0] is p2.measures[0]:
         print("Child measure has reference to parent measure")
 
     return c1,c2

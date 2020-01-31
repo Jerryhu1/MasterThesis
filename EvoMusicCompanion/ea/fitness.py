@@ -218,7 +218,7 @@ def interval_size(individual):
 
 def fitness_chord_tone_beat(individual: Individual):
     strong_beat = [0.0, 0.5]
-    score = 0
+    score = 0.0
     for m in individual.measures:
         dur_counter = 0.0
         for n in m.notes:
@@ -231,6 +231,8 @@ def fitness_chord_tone_beat(individual: Individual):
     # 2 strong beats per measure
     if score == 0.0:
         return 0.0
+    if score / (2*len(individual.measures)) == 1.0 and individual.measures[0].notes[0].pitch == 'REST':
+        print('Rest in chord tone')
     return score / (2*len(individual.measures))
 
 
