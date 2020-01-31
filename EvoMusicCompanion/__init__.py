@@ -11,9 +11,9 @@ if __name__ == '__main__':
     #duration_matrix = pd.read_csv('piano_man_duration.csv', index_col=0)
     duration_matrix = None
     pitch_matrix = None
-    crossover = ["UX", "1X+2X"]
-    pop_sizes = [300, 500]
-    iterations = [30, 50, 100]
+    crossover = ["1X+2X"]
+    pop_sizes = [100]
+    iterations = [101]
     for x in crossover:
         constants.CROSSOVER = x
         for i in iterations:

@@ -1,12 +1,16 @@
+from math import ceil
+
 NUM_OF_MEASURES = 4
 N_GRAM = 'trigram'
 LEARNING_RATE = 0.5
 POPULATION_SIZE = 100
-SELECTION_SIZE = 5
+SELECTION_SIZE = ceil(POPULATION_SIZE * 0.05)
 TOURNAMENT_SIZE = 4
-ELITISM_SIZE = 5
+ELITISM_SIZE = ceil(POPULATION_SIZE * 0.05)
 ITERATIONS = 10
 CROSSOVER = "UX"
+SYSTEM = "MODEL"
+
 def flatten(l):
     return [item for sublist in l for item in sublist]
 

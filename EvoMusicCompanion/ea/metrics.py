@@ -5,6 +5,7 @@ from ea.individual import Individual
 import csv
 import os
 import datetime
+import pandas as pd
 
 header = ["i", "MAX_F", "MIN_F", "MEAN_F", "C_TONE", "C_TONE_B", "CADENCE", "L_NOTE", "I_RES", "L_INT", "L_DUR",
           "CONS_R", "CONS_N", "PATTERN_D", "PATTERN_SD", "EQ_INDIV", "INDIV_SIZE", "L_RATE", "POP_SIZE", "E_SIZE", "X_TYPE"]
@@ -57,19 +58,28 @@ def write_population_metrics(iteration, population: [Individual]):
     for i in range(len(data)):
         if isinstance(data[i], float):
             data[i] = round(data[i], 3)
-    folder = f'./output/experiment-iterations={constants.ITERATIONS}-pop={constants.POPULATION_SIZE}'
+    folder = f'./output/{constants.SYSTEM}/experiment-iterations={constants.ITERATIONS}-pop={constants.POPULATION_SIZE}'
     file = f'/experiment-crossover={constants.CROSSOVER}-{datetime.datetime.now().date()}.csv'
-
     if not os.path.exists(folder):
         os.makedirs(folder)
+
+    if not os.path.exists(folder + file):
         with open(folder + file, mode='w') as file:
             writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, lineterminator = '\n')
             writer.writerow(header)
             writer.writerow(data)
+
     else:
         with open(folder + file, mode='a') as file:
             writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, lineterminator = '\n')
             writer.writerow(data)
+
+
+def write_matrices(pitch_matrix, backoff_matrix):
+    if constants.SYSTEM != "GA":
+        folder = f'./output/{constants.SYSTEM}/experiment-iterations={constants.ITERATIONS}-pop={constants.POPULATION_SIZE}'
+        pitch_matrix.to_csv(folder + '/pitch_matrix.csv')
+        backoff_matrix.to_csv(folder + '/backoff_matrix.csv')
 
 
 def measure_counter(population: [Individual]):
