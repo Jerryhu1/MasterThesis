@@ -41,30 +41,49 @@ class Simulation:
 
         print('Starting evolution')
         self.population = initialisation.initialize_population(constants.POPULATION_SIZE)
+
+        converged_counter = 0.0
+        converged_iteration = -1
+
         for i in range(constants.ITERATIONS):
             self.population.sort(key=lambda x: x.fitness, reverse=True)
             self.elitist_population = self.population[0:constants.ELITISM_SIZE]
 
             next_generation = []
+            random.shuffle(self.population)
 
             # Elitism
             next_generation.extend(self.elitist_population)
 
             if constants.SYSTEM == "GA" or constants.SYSTEM == "HYBRID":
                 self.crossover_mutation(next_generation)
-            elif constants.SYSTEM == "MODEL":
+            if constants.SYSTEM == "MODEL" or constants.SYSTEM == "HYBRID":
                 sel = self.population[0:constants.SELECTION_SIZE]
                 self.update_matrices(sel)
+                next_generation.extend(initialisation.initialize_population(constants.MODEL_POPULATION))
 
             next_generation.sort(key=lambda x: x.fitness, reverse=True)
             next_generation = next_generation[0:constants.POPULATION_SIZE]
 
             self.population = next_generation
-            self.population.extend(
-                initialisation.initialize_population(constants.POPULATION_SIZE- len(self.population)))
+            if constants.SYSTEM is not "MULTIPLE":
+                metrics.write_population_metrics(i, self.population)
+            if i % 25 == 0:
+                print(f"Iteration {i} done")
 
-            metrics.write_population_metrics(i, self.population)
-            print(f"Iteration {i} done")
+            if metrics.proportion_equal_to_highest_fitness(self.population) == 1.0:
+                converged_counter += 1
+            else:
+                converged_counter = 0
+            if converged_counter > 10:
+                print('Population is converged, stopping')
+                converged_iteration = i-10
+                break
+            # print(f"Average fitness: {avg_fitness}")
+            # print(f"Max fitness: {max(fitnesses)}")
+            # print(f"Min fitness: {min(fitnesses)}")
+            # print(f"Population size: {len(self.population)}")
+            # print(f"Proportion of equal individuals: {metrics.proportion_equal_to_highest_fitness(self.population)}")
         print('-------------------------------------------------')
         print('Done evolving, playing songs')
         # for j in range(len(self.population[0:4])):
@@ -85,8 +104,11 @@ class Simulation:
         #     fitness.print_fitness_values(ind)
         #     print(f' ')
         self.population.sort(key=lambda x: x.fitness, reverse=True)
+        if constants.RUN_MODE == 'MULTIPLE':
+            metrics.write_average_runs(converged_iteration, self.population)
+
         if constants.SYSTEM != 'GA':
-            metrics.write_matrices(self.pitch_matrix, self.backoff_matrix)
+            metrics.write_matrices(self.pitch_matrix, self.backoff_matrix, self.duration_matrix)
         musicPlayer.write_music_midi(play_pieces)
 
     def crossover_mutation(self, next_generation):
