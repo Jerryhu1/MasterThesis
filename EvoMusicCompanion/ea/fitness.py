@@ -251,6 +251,26 @@ def fitness_chord_tone(individual: Individual):
 
 
 def cadence(individual: Individual):
+
+    last_measure = individual.measures[-1]
+    strong_beats = [0.0, 0.5]
+    dur_counter = 0.0
+    for i in range(len(last_measure.notes)):
+        note = last_measure.notes[i]
+        if i == len(last_measure.notes) - 1:
+            if note.pitchWithoutOctave == last_measure.chordWithoutOctave[0]:
+                if dur_counter in strong_beats:
+                    if note.duration.duration_value > 0.25:
+                        return 1.0
+                    else:
+                        return 0.5
+                else:
+                    return 0.5
+            else:
+                return -1.0
+
+        dur_counter += last_measure.notes[i].duration.duration_value
+
     last_note = individual.measures[-1].notes[-1]
     last_pitch = last_note.pitchWithoutOctave
     last_chord = individual.measures[-1].chordWithoutOctave
