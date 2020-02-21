@@ -1,9 +1,10 @@
 from music21 import note, chord, stream, duration, interval, midi
 from music21.stream import Score
 
-from ea import individual, fitness, constants
+from ea import individual, fitness, constants, metrics
 from ea.individual import Measure, Note
 import datetime
+import ea
 
 
 def play(population: [individual.Individual]):
@@ -13,10 +14,10 @@ def play(population: [individual.Individual]):
 
 
 def write_music_midi(population: [individual.Individual]):
-    path = f'./output/{constants.SYSTEM}/experiment-iterations={constants.ITERATIONS}-pop={constants.POPULATION_SIZE}/experiment-crossover={constants.CROSSOVER}-{datetime.datetime.now().date()}.mid'
+    folder, file = metrics.get_path('MULTIPLE', '.mid')
     s = getPopulationScore(population)
-    print(f'Writing to: {path}')
-    s.write("midi", path)
+    print(f'Writing to: {folder + file}')
+    s.write("midi", folder + file)
 
 
 def play_music_xml(population: [individual.Individual]):
@@ -187,12 +188,16 @@ def music21_score_to_individual(s: Score):
                 pitch_name = n.nameWithOctave
                 if '-' in pitch_name or '##' in pitch_name:
                     pitch_name = n.pitch.getEnharmonic().nameWithOctave
-            dur = duration.Duration(n.duration.type, None)
+            dur = ea.duration.Duration(n.duration.type, None)
             new_note = individual.Note(pitch_name, dur)
             new_measure.notes.append(new_note)
         if len(new_measure.notes) == 0:
             continue
         new_measures.append(new_measure)
     indiv = individual.Individual(new_measures, 0.0)
-    fitness.set_fitness(indiv)
+    if len(new_measures) > 0:
+        ea.initialisation.set_chords(indiv)
+        fitness.set_fitness(indiv)
+    else:
+        return None
     return indiv

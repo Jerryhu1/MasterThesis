@@ -5,6 +5,7 @@ from music21 import pitch, interval, scale
 from ea import util, constants
 from ea.individual import Individual, Note
 from nltk import ngrams
+import math
 
 major_scale = ['A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5']
 
@@ -103,6 +104,30 @@ def set_fitness_for_population(population: [Individual]):
     for i in population:
         set_fitness(i)
     return population
+
+
+def get_distance(i1: Individual, i2: Individual):
+    dic = {
+        "C_TONE" : 0.0,
+        "C_TONE_B": 0.0,
+        "CADENCE": 0.0,
+        "L_NOTE": 0.0,
+        "I_RES": 0.0,
+        "L_INT": 0.0,
+        "L_DUR": 0.0,
+        "CONS_R": 0.0,
+        "CONS_N": 0.0,
+        "PATTERN_D": 0.0,
+        "PATTERN_SD": 0.0
+    }
+
+    for k, v in i1.fitnesses.items:
+        i2_val = i2.fitnesses[k]
+
+        delta = abs(v - i2_val)
+        dic[k] = delta
+
+    return sum(dic.values()), dic
 
 
 def long_notes(individual: Individual):
@@ -251,7 +276,6 @@ def fitness_chord_tone(individual: Individual):
 
 
 def cadence(individual: Individual):
-
     last_measure = individual.measures[-1]
     strong_beats = [0.0, 0.5]
     dur_counter = 0.0
@@ -268,28 +292,9 @@ def cadence(individual: Individual):
                     return 0.5
             else:
                 return -1.0
-
         dur_counter += last_measure.notes[i].duration.duration_value
 
-    last_note = individual.measures[-1].notes[-1]
-    last_pitch = last_note.pitchWithoutOctave
-    last_chord = individual.measures[-1].chordWithoutOctave
-    counter = 2
-    while len(last_chord) == 0:
-        last_chord = individual.measures[len(individual.measures) - counter].chordWithoutOctave
-        counter += 1
-        if len(individual.measures) - counter == 0:
-            return 0.0
-    score = 0
-    if last_pitch == last_chord[0]:
-        if last_note.duration.duration_value > 0.25:
-            score += 1.0
-        else:
-            score += 0.5
-    else:
-        return -1.0
-
-    return score
+    return -1.0
 
 
 def intervallic_patterns(individual: Individual):

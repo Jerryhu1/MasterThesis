@@ -34,11 +34,11 @@ def applyMutation(individual: Individual, elitist_population: [Individual]):
 
 def elitist_mutation(individual: Individual, elitist_population: [Individual]):
     e_individual: Individual = rng.choice(elitist_population)
-    e_individual_copy = copy.deepcopy(e_individual)
 
     measure = rng.choice(range(len(e_individual.measures)))
+    e_individual_copy = copy.deepcopy(e_individual.measures[measure].notes)
 
-    individual.measures[measure].notes = e_individual_copy.measures[measure].notes
+    individual.measures[measure].notes = e_individual_copy
 
     if individual.measures[measure].notes is e_individual.measures[measure].notes:
         print('Mutated individual has reference to elitist individual')

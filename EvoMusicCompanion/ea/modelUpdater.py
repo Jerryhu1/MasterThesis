@@ -23,13 +23,12 @@ def update_matrix(individuals, matrix, backoff=False):
     n_matrix = get_matrix(all_pitches)
     n_matrix = modelTrainer.get_probabilistic_matrix(n_matrix)
     update_matrices.append((n_matrix, constants.LEARNING_RATE))
-    new_matrix = copy.deepcopy(matrix)
 
     for m in update_matrices:
         u_matrix = m[0]
         learning_rate = m[1]
-        for i in new_matrix.keys():
-            for j in new_matrix[i].keys():
+        for i in matrix.keys():
+            for j in matrix[i].keys():
                 if i in u_matrix and j in u_matrix[i]:
                     # u_matrix contains the values, subtract from each other
                     difference = u_matrix[i][j] - matrix[i][j]
@@ -39,9 +38,9 @@ def update_matrix(individuals, matrix, backoff=False):
                 else:  # u_matrix contains the column, but not the row. So no transitions to that note at all
                     difference = -matrix[i][j]
 
-                new_matrix[i][j] = matrix[i][j] + (difference * learning_rate)
+                matrix[i][j] = matrix[i][j] + (difference * learning_rate)
 
-    return new_matrix
+    return matrix
 
 
 def update_duration(individuals, matrix):

@@ -7,6 +7,18 @@ import os
 import datetime
 import pandas as pd
 
+
+def get_path(prefix, file_format=None):
+    if file_format is None:
+        file_format = '.csv'
+    metric = 'learning-rate'
+    value = constants.LEARNING_RATE
+
+    folder = f'./output/{constants.SYSTEM}/{prefix}-experiment-{metric}'
+    file = f'/{prefix}-experiment-{datetime.datetime.now().date()}-{metric}={value}{file_format}'
+    return folder, file
+
+
 def write_population_metrics(iteration, population: [Individual]):
     header = ["i", "MAX_F", "MIN_F", "MEAN_F", "C_TONE", "C_TONE_B", "CADENCE", "L_NOTE", "I_RES", "L_INT", "L_DUR",
               "CONS_R", "CONS_N", "PATTERN_D", "PATTERN_SD", "EQ_INDIV", "INDIV_SIZE", "L_RATE", "POP_SIZE", "E_SIZE", "X_TYPE"]
@@ -55,8 +67,7 @@ def write_population_metrics(iteration, population: [Individual]):
     for i in range(len(data)):
         if isinstance(data[i], float):
             data[i] = round(data[i], 3)
-    folder = f'./output/{constants.SYSTEM}/experiment-iterations={constants.ITERATIONS}-pop={constants.POPULATION_SIZE}'
-    file = f'/experiment-crossover={constants.CROSSOVER}-{datetime.datetime.now().date()}.csv'
+    folder, file = get_path('iterations')
 
     write_to_csv(data, header, folder, file)
 
@@ -123,17 +134,17 @@ def write_average_runs(converge_it, population: [Individual]):
 
     header = ["I", "I_CONV", "MAX_F", "MIN_F", "MEAN_F", "C_TONE", "C_TONE_B", "CADENCE", "L_NOTE", "I_RES", "L_INT", "L_DUR",
               "CONS_R", "CONS_N", "PATTERN_D", "PATTERN_SD", "EQ_INDIV", "INDIV_SIZE", "L_RATE", "POP_SIZE", "E_SIZE", "X_TYPE"]
-    folder = f'./output/{constants.SYSTEM}/{constants.RUN_MODE}-experiment-iterations={constants.ITERATIONS}-pop={constants.POPULATION_SIZE}'
-    file = f'/{constants.RUN_MODE}-{constants.SYSTEM}-experiment-crossover={constants.CROSSOVER}-{datetime.datetime.now().date()}.csv'
+
+    folder, file = get_path('MULTIPLE')
     write_to_csv(data, header, folder, file)
 
 
 def write_matrices(pitch_matrix, backoff_matrix, duration_matrix):
     if constants.SYSTEM != "GA":
-        folder = f'./output/{constants.SYSTEM}/experiment-iterations={constants.ITERATIONS}-pop={constants.POPULATION_SIZE}'
-        pitch_matrix.to_csv(folder + '/pitch_matrix.csv')
-        backoff_matrix.to_csv(folder + '/backoff_matrix.csv')
-        duration_matrix.to_csv(folder + '/duration_matrix.csv')
+        folder, file = get_path('MULTIPLE')
+        pitch_matrix.to_csv(folder + f'/pitch_matrix-{constants.LEARNING_RATE}.csv')
+        backoff_matrix.to_csv(folder + f'/backoff_matrix-{constants.LEARNING_RATE}.csv')
+        duration_matrix.to_csv(folder + f'/duration_matrix-{constants.LEARNING_RATE}.csv')
 
 
 def measure_counter(population: [Individual]):
@@ -167,3 +178,79 @@ def proportion_equal_to_highest_fitness(population: [Individual]):
         if curr_individual == highest_fitness_i:
             counter += 1.0
     return counter / len(population)
+
+
+def write_individual_metrics(iteration, population: [Individual]):
+    header = ["i", "INDV_INDEX", "FITNESS", "C_TONE", "C_TONE_B", "CADENCE", "L_NOTE", "I_RES", "L_INT", "L_DUR",
+              "CONS_R", "CONS_N", "PATTERN_D", "PATTERN_SD"]
+    data = []
+    for i in range(len(population)):
+        indv = population[i]
+        fitness = indv.fitness
+        c_tone = indv.fitnesses['C_TONE']
+        c_tone_b = indv.fitnesses['C_TONE_B']
+        cadence = indv.fitnesses['CADENCE']
+        l_note = indv.fitnesses['L_NOTE']
+        i_res = indv.fitnesses['I_RES']
+        l_int = indv.fitnesses['L_INT']
+        l_dur = indv.fitnesses['L_DUR']
+        cons_r = indv.fitnesses['CONS_R']
+        cons_n = indv.fitnesses['CONS_N']
+        pattern_d = indv.fitnesses['PATTERN_D']
+        pattern_sd = indv.fitnesses['PATTERN_SD']
+
+        row = [
+            iteration,
+            i,
+            fitness,
+            c_tone,
+            c_tone_b,
+            cadence,
+            l_note,
+            i_res,
+            l_int,
+            l_dur,
+            cons_r,
+            cons_n,
+            pattern_d,
+            pattern_sd,
+        ]
+
+        data.append(row)
+
+    for indv in range(len(data)):
+        if isinstance(data[indv], float):
+            data[indv] = round(data[indv], 3)
+
+    (folder, file) = get_path()
+    write_multiple_rows_to_csv(data, header, folder, file)
+
+
+def write_multiple_rows_to_csv(data, header, folder, file):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    if not os.path.exists(folder + file):
+        with open(folder + file, mode='w') as file:
+                writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, lineterminator = '\n')
+                writer.writerow(header)
+                for d in data:
+                    writer.writerow(d)
+
+    else:
+        with open(folder + file, mode='a') as file:
+            for d in data:
+                writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, lineterminator = '\n')
+                writer.writerow(d)
+
+
+def converged(population: [Individual]):
+    fitnesses = list(map(lambda x: x.fitness, population))
+    avg_fitness = sum(fitnesses) / len(population)
+    max_fitness = max(fitnesses)
+    min_fitness = min(fitnesses)
+
+    if avg_fitness == max_fitness and max_fitness == min_fitness:
+        return True
+
+    return False
