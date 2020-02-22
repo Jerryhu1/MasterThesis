@@ -2,15 +2,18 @@ from ea.individual import Individual, Note, Measure
 from music21 import pitch, interval
 import random
 from ea import fitness, duration, individual, constants
+import time
 
 pitch_matrix = None
 duration_matrix = None
 backoff_matrix = None
 
+rng = random.Random()
 
 def initialize_population(population_size) -> [Individual]:
     population = []
 
+    start = time.time()
     for i in range(population_size):
         measures: [Measure] = []
         for j in range(constants.NUM_OF_MEASURES):
@@ -30,10 +33,14 @@ def initialize_population(population_size) -> [Individual]:
             measures.append(m)
         new_individual = individual.Individual(measures=measures, fitness=0)
         population.append(new_individual)
-
+    end = time.time()
+    print(f'Initialize notes and durations for pop time: {end - start}')
     # Assign chords to each individual and set fitness
     population = set_chords_for_population(population)
+    start = time.time()
     fitness.set_fitness_for_population(population)
+    end = time.time()
+    print(f'Fitness evaluation population time: {end - start}')
     return population
 
 
@@ -42,12 +49,11 @@ def init_first_note(init_vector):
 
 
 def random_sample(transitions):
-    rng = random.random()
-
+    r = rng.random()
     p_sum = 0.0
     for k, v in transitions.iteritems():
         try:
-            if p_sum < rng < p_sum + v:
+            if p_sum < r < p_sum + v:
                 return k
             else:
                 p_sum += v
@@ -62,7 +68,7 @@ def get_random_pitch_transition(start):
 
 def get_random_transition(matrix, start, backoff_matrix=None):
     if start is None:
-        start = random.choice(list(matrix.keys()))
+        start = rng.choice(list(matrix.keys()))
 
     # Backoff case
     if start not in matrix.keys():

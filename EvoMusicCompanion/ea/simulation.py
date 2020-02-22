@@ -4,7 +4,7 @@ from ea import individual, musicPlayer, modelTrainer, initialisation, crossover,
     constants, metrics, modelUpdater
 from ea.individual import Individual
 import random
-
+import time
 
 class Simulation:
     pitch_matrix = None
@@ -40,8 +40,10 @@ class Simulation:
         print('Initializing population')
 
         print('Starting evolution')
+        start = time.time()
         self.population = initialisation.initialize_population(constants.POPULATION_SIZE)
-
+        end = time.time()
+        print(f"Init population time: {end - start}")
         converged_counter = 0.0
         converged_iteration = -1
 
@@ -63,41 +65,48 @@ class Simulation:
                         next_generation.extend(crossover_generation[0:constants.CROSSOVER_POPULATION])
                     else:
                         next_generation.extend(crossover_generation)
+
+
             if constants.SYSTEM == "MODEL" or constants.SYSTEM == "HYBRID":
                 # Elitism
                 next_generation.extend(self.elitist_population)
                 sel = self.population[0:constants.SELECTION_SIZE]
                 if constants.LEARNING_RATE != 0.0:
+                    start = time.time()
                     self.update_matrices(sel)
-                if constants.SYSTEM == "HYBRID":
-                    next_generation.extend(initialisation.initialize_population(constants.MODEL_POPULATION))
-                else:
-                    next_generation.extend(
+                    end = time.time()
+                    print(f"Update matrices: {end - start}")
+            if constants.SYSTEM == "HYBRID":
+                next_generation.extend(initialisation.initialize_population(constants.MODEL_POPULATION))
+            else:
+                next_generation.extend(
                         initialisation.initialize_population(constants.POPULATION_SIZE))
+
+
 
             next_generation.sort(key=lambda x: x.fitness, reverse=True)
             next_generation = next_generation[0:constants.POPULATION_SIZE]
 
             self.population = next_generation
 
-            # Metrics
-            if constants.SYSTEM is not "MULTIPLE" and constants.METRIC_MODE is not "ALL":
-                metrics.write_population_metrics(i, self.population)
-
-            if i % 25 == 0:
-                print(f"Iteration {i} done")
-
-            if constants.METRIC_MODE == "ALL":
-                metrics.write_individual_metrics(i, population=self.population)
-
-            if metrics.converged(self.population):
-                converged_counter += 1
-            else:
-                converged_counter = 0
-            if converged_counter > 10:
-                print('Population is converged, stopping')
-                converged_iteration = i-10
-                break
+            # # Metrics
+            # if constants.SYSTEM is not "MULTIPLE" and constants.METRIC_MODE is not "ALL":
+            #     metrics.write_population_metrics(i, self.population)
+            #
+            # if i % 25 == 0:
+            #     print(f"Iteration {i} done")
+            #
+            # if constants.METRIC_MODE == "ALL":
+            #     metrics.write_individual_metrics(i, population=self.population)
+            #
+            # if metrics.converged(self.population):
+            #     converged_counter += 1
+            # else:
+            #     converged_counter = 0
+            # if converged_counter > 10:
+            #     print('Population is converged, stopping')
+            #     converged_iteration = i-10
+            #     break
 
             # print(f"Average fitness: {avg_fitness}")
             # print(f"Max fitness: {max(fitnesses)}")

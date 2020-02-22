@@ -1,12 +1,6 @@
-import sys
-
-from PyQt5.QtWidgets import QApplication
 from math import ceil
-
-from ea.constants import POPULATION_SIZE
+import time
 from ea.simulation import Simulation, constants
-import pandas as pd
-from gui.Main import Main
 
 if __name__ == '__main__':
     #pitch_matrix = pd.read_csv('piano_man.csv', index_col=0)
@@ -19,7 +13,7 @@ if __name__ == '__main__':
     learning_rates = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
     systems = ["MODEL"]
     selection_size = [0.1, 0.2, 0.3, 0.4, 0.5]
-    constants.RUN_MODE = "MULTIPLE"
+    constants.RUN_MODE = "SINGLE"
     constants.METRIC_MODE = "MULTIPLE"  # ALL
     if constants.RUN_MODE == "MULTIPLE":
         runs = 4
@@ -36,6 +30,7 @@ if __name__ == '__main__':
                 constants.ITERATIONS = i
                 for n in pop_sizes:
                     for r in range(runs):
+                        start = time.time()
                         constants.POPULATION_SIZE = n
                         constants.ELITISM_SIZE = ceil(n * 0.05)
                         constants.CROSSOVER_POPULATION = ceil(n * 0.5)
@@ -57,6 +52,8 @@ if __name__ == '__main__':
 
                         sim = Simulation(duration_matrix, pitch_matrix)
                         sim.run(pitch_matrix, duration_matrix, None)
+                        end = time.time()
+                        print(f'Single run time: {end - start}')
 
     #app = QApplication(sys.argv)
     #ex = Main()

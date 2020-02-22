@@ -6,6 +6,7 @@ from ea import util, constants
 from ea.individual import Individual, Note
 from nltk import ngrams
 import math
+import time
 
 major_scale = ['A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5']
 
@@ -51,27 +52,11 @@ w8 = 1.0
 
 def get_fitness(individual):
     int_pattern = intervallic_patterns(individual)
+    duration = duration_patterns(individual)
     chord_tone_beat = fitness_chord_tone_beat(individual)
     chord_tone = fitness_chord_tone(individual)
     last_note = cadence(individual)
     long_note = long_notes(individual)
-    duration = duration_patterns(individual)
-    duration_change = duration_changes(individual)
-    intervals = interval_size(individual)
-    rests = consecutive_rests(individual)
-    interval_resolution = interval_resolution_strong_beat(individual)
-    consecutive_notes = similar_notes(individual)
-
-    return int_pattern + chord_tone + chord_tone_beat + last_note + long_note + duration + intervals + rests + \
-           interval_resolution + duration_change + consecutive_notes
-
-def get_fitness_dic(individual):
-    int_pattern = intervallic_patterns(individual)
-    chord_tone_beat = fitness_chord_tone_beat(individual)
-    chord_tone = fitness_chord_tone(individual)
-    last_note = cadence(individual)
-    long_note = long_notes(individual)
-    duration = duration_patterns(individual)
     duration_change = duration_changes(individual)
     intervals = interval_size(individual)
     rests = consecutive_rests(individual)
@@ -92,12 +77,13 @@ def get_fitness_dic(individual):
         "PATTERN_SD": int_pattern
     }
 
-    return dic
-
+    return (int_pattern + chord_tone + chord_tone_beat + last_note + long_note + duration + intervals + rests + \
+           interval_resolution + duration_change + consecutive_notes), dic
 
 def set_fitness(individual):
-    individual.fitness = get_fitness(individual)
-    individual.fitnesses = get_fitness_dic(individual)
+    f, dic = get_fitness(individual)
+    individual.fitness = f
+    individual.fitnesses = dic
 
 
 def set_fitness_for_population(population: [Individual]):
