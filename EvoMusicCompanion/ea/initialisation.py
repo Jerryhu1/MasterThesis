@@ -3,6 +3,7 @@ from music21 import pitch, interval
 import random
 from ea import fitness, duration, individual, constants
 import time
+import threading
 
 pitch_matrix = None
 duration_matrix = None
@@ -32,6 +33,7 @@ def initialize_population(population_size) -> [Individual]:
             m = Measure(measure_notes, 0, None)
             measures.append(m)
         new_individual = individual.Individual(measures=measures, fitness=0)
+
         population.append(new_individual)
     end = time.time()
     print(f'Initialize notes and durations for pop time: {end - start}')

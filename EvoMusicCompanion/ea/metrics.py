@@ -11,8 +11,8 @@ import pandas as pd
 def get_path(prefix, file_format=None):
     if file_format is None:
         file_format = '.csv'
-    metric = 'learning-rate'
-    value = constants.LEARNING_RATE
+    metric = constants.FILE_PREFIX
+    value = constants.METRIC_VALUE
 
     folder = f'./output/{constants.SYSTEM}/{prefix}-experiment-{metric}'
     file = f'/{prefix}-experiment-{datetime.datetime.now().date()}-{metric}={value}{file_format}'
@@ -129,11 +129,12 @@ def write_average_runs(converge_it, population: [Individual]):
         constants.LEARNING_RATE,
         constants.POPULATION_SIZE,
         constants.ELITISM_SIZE,
-        constants.CROSSOVER
+        constants.CROSSOVER,
+        constants.SELECTION_SIZE
     ]
 
     header = ["I", "I_CONV", "MAX_F", "MIN_F", "MEAN_F", "C_TONE", "C_TONE_B", "CADENCE", "L_NOTE", "I_RES", "L_INT", "L_DUR",
-              "CONS_R", "CONS_N", "PATTERN_D", "PATTERN_SD", "EQ_INDIV", "INDIV_SIZE", "L_RATE", "POP_SIZE", "E_SIZE", "X_TYPE"]
+              "CONS_R", "CONS_N", "PATTERN_D", "PATTERN_SD", "EQ_INDIV", "INDIV_SIZE", "L_RATE", "POP_SIZE", "E_SIZE", "X_TYPE", "SEL_SIZE"]
 
     folder, file = get_path('MULTIPLE')
     write_to_csv(data, header, folder, file)

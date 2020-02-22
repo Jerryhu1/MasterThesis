@@ -7,6 +7,7 @@ from ea.individual import Individual, Note
 from nltk import ngrams
 import math
 import time
+import threading
 
 major_scale = ['A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5']
 
@@ -283,7 +284,7 @@ def cadence(individual: Individual):
     return -1.0
 
 
-def intervallic_patterns(individual: Individual):
+async def intervallic_patterns(individual: Individual):
     notes: [Note] = individual.get_flattened_notes()
     notes = list(filter(lambda x: x.pitch != 'REST', notes))
     intervals = []

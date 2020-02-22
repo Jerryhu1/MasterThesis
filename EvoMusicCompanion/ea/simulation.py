@@ -22,6 +22,7 @@ class Simulation:
         self.simulation = self
 
     def run(self, pitch_matrix, duration_matrix, backoff_matrix):
+        start = time.time()
         print('Starting generation')
         if pitch_matrix is None:
             print('Training the pitch matrix, this might take a while')
@@ -39,11 +40,7 @@ class Simulation:
 
         print('Initializing population')
 
-        print('Starting evolution')
-        start = time.time()
         self.population = initialisation.initialize_population(constants.POPULATION_SIZE)
-        end = time.time()
-        print(f"Init population time: {end - start}")
         converged_counter = 0.0
         converged_iteration = -1
 
@@ -72,10 +69,7 @@ class Simulation:
                 next_generation.extend(self.elitist_population)
                 sel = self.population[0:constants.SELECTION_SIZE]
                 if constants.LEARNING_RATE != 0.0:
-                    start = time.time()
                     self.update_matrices(sel)
-                    end = time.time()
-                    print(f"Update matrices: {end - start}")
             if constants.SYSTEM == "HYBRID":
                 next_generation.extend(initialisation.initialize_population(constants.MODEL_POPULATION))
             else:
@@ -89,25 +83,27 @@ class Simulation:
 
             self.population = next_generation
 
-            # # Metrics
-            # if constants.SYSTEM is not "MULTIPLE" and constants.METRIC_MODE is not "ALL":
-            #     metrics.write_population_metrics(i, self.population)
-            #
-            # if i % 25 == 0:
-            #     print(f"Iteration {i} done")
-            #
-            # if constants.METRIC_MODE == "ALL":
-            #     metrics.write_individual_metrics(i, population=self.population)
-            #
-            # if metrics.converged(self.population):
-            #     converged_counter += 1
-            # else:
-            #     converged_counter = 0
-            # if converged_counter > 10:
-            #     print('Population is converged, stopping')
-            #     converged_iteration = i-10
-            #     break
+            # Metrics
+            if constants.SYSTEM is not "MULTIPLE" and constants.METRIC_MODE is not "ALL":
+                metrics.write_population_metrics(i, self.population)
 
+            if i % 25 == 0:
+                print(f"Iteration {i} done")
+
+            if constants.METRIC_MODE == "ALL":
+                metrics.write_individual_metrics(i, population=self.population)
+
+            if metrics.converged(self.population):
+                converged_counter += 1
+            else:
+                converged_counter = 0
+            if converged_counter > 10:
+                print('Population is converged, stopping')
+                converged_iteration = i-10
+                break
+
+            end = time.time()
+            print(f'Iteration time: {end-start}')
             # print(f"Average fitness: {avg_fitness}")
             # print(f"Max fitness: {max(fitnesses)}")
             # print(f"Min fitness: {min(fitnesses)}")
