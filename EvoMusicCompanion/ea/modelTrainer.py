@@ -10,9 +10,9 @@ import csv
 
 from music21 import *
 
-trigram_pitch_matrix_path = './trigram_pitch_matrix.csv'
-bigram_pitch_matrix_path = './bigram_pitch_matrix.csv'
-duration_matrix_path = './duration_matrix.csv'
+trigram_pitch_matrix_path = './EvoMusicCompanion/trigram_pitch_matrix.csv'
+bigram_pitch_matrix_path = './EvoMusicCompanion/bigram_pitch_matrix.csv'
+duration_matrix_path = './EvoMusicCompanion/duration_matrix.csv'
 symbol_matrix_path = './symbol_matrix.csv'
 
 

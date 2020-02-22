@@ -284,7 +284,7 @@ def cadence(individual: Individual):
     return -1.0
 
 
-async def intervallic_patterns(individual: Individual):
+def intervallic_patterns(individual: Individual):
     notes: [Note] = individual.get_flattened_notes()
     notes = list(filter(lambda x: x.pitch != 'REST', notes))
     intervals = []

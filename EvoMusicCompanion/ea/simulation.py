@@ -5,6 +5,7 @@ from ea import individual, musicPlayer, modelTrainer, initialisation, crossover,
 from ea.individual import Individual
 import random
 import time
+import sys
 
 class Simulation:
     pitch_matrix = None
@@ -22,7 +23,6 @@ class Simulation:
         self.simulation = self
 
     def run(self, pitch_matrix, duration_matrix, backoff_matrix):
-        start = time.time()
         print('Starting generation')
         if pitch_matrix is None:
             print('Training the pitch matrix, this might take a while')
@@ -45,6 +45,7 @@ class Simulation:
         converged_iteration = -1
 
         for i in range(constants.ITERATIONS):
+            start = time.time()
             self.population.sort(key=lambda x: x.fitness, reverse=True)
             self.elitist_population = self.population[0:constants.ELITISM_SIZE]
 
@@ -104,6 +105,7 @@ class Simulation:
 
             end = time.time()
             print(f'Iteration time: {end-start}')
+            sys.stdout.flush()
             # print(f"Average fitness: {avg_fitness}")
             # print(f"Max fitness: {max(fitnesses)}")
             # print(f"Min fitness: {min(fitnesses)}")
@@ -124,6 +126,8 @@ class Simulation:
         if constants.SYSTEM != 'GA':
             metrics.write_matrices(self.pitch_matrix, self.backoff_matrix, self.duration_matrix)
         musicPlayer.write_music_midi(play_pieces)
+        sys.stdout.flush()
+
 
     def crossover_mutation(self):
         next_generation = []
