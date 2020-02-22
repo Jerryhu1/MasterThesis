@@ -2,3 +2,4 @@ music21
 pandas
 scipy
 numpy
+nltk
