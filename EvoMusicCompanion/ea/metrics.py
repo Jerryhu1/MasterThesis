@@ -2,10 +2,12 @@ import collections
 
 from ea import util, constants
 from ea.individual import Individual
+from statistics import median
+
 import csv
 import os
 import datetime
-import pandas as pd
+
 
 
 def get_path(prefix, file_format=None):
@@ -19,12 +21,13 @@ def get_path(prefix, file_format=None):
 
 
 def write_population_metrics(iteration, population: [Individual]):
-    header = ["i", "MAX_F", "MIN_F", "MEAN_F", "C_TONE", "C_TONE_B", "CADENCE", "L_NOTE", "I_RES", "L_INT", "L_DUR",
+    header = ["i", "MAX_F", "MIN_F", "MEAN_F", "MEDIAN_F", "C_TONE", "C_TONE_B", "CADENCE", "L_NOTE", "I_RES", "L_INT", "L_DUR",
               "CONS_R", "CONS_N", "PATTERN_D", "PATTERN_SD", "EQ_INDIV", "INDIV_SIZE", "L_RATE", "POP_SIZE", "E_SIZE", "X_TYPE"]
     fitnesses = list(map(lambda x: x.fitness, population))
     avg_fitness = sum(fitnesses) / len(population)
     max_fitness = max(fitnesses)
     min_fitness = min(fitnesses)
+    med_fitness = median(fitnesses)
 
     c_tone = population[0].fitnesses['C_TONE']
     c_tone_b = population[0].fitnesses['C_TONE_B']
@@ -44,6 +47,7 @@ def write_population_metrics(iteration, population: [Individual]):
         max_fitness,
         min_fitness,
         avg_fitness,
+        med_fitness,
         c_tone,
         c_tone_b,
         cadence,

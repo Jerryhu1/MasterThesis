@@ -311,8 +311,8 @@ def update_matrix(samples, matrix, convergence_rate):
                 # u_matrix contains the values, subtract from each other
                 difference = u_matrix[i][j] - matrix[i][j]
             elif i not in u_matrix:
-                # u_matrix does not contain the column, we can not update transitions strating from this note
-                difference = 0.0
+                # u_matrix does not contain the column, set count to 1 (laplace smoothing)
+                difference = 1/constants.POPULATION_SIZE
             else:  # u_matrix contains the column, but not the row. So no transitions to that note at all
                 difference = -matrix[i][j]
 

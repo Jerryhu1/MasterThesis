@@ -13,8 +13,6 @@ rng = random.Random()
 
 def initialize_population(population_size) -> [Individual]:
     population = []
-
-    start = time.time()
     for i in range(population_size):
         measures: [Measure] = []
         for j in range(constants.NUM_OF_MEASURES):
@@ -35,14 +33,9 @@ def initialize_population(population_size) -> [Individual]:
         new_individual = individual.Individual(measures=measures, fitness=0)
 
         population.append(new_individual)
-    end = time.time()
-    print(f'Initialize notes and durations for pop time: {end - start}')
     # Assign chords to each individual and set fitness
     population = set_chords_for_population(population)
-    start = time.time()
     fitness.set_fitness_for_population(population)
-    end = time.time()
-    print(f'Fitness evaluation population time: {end - start}')
     return population
 
 
