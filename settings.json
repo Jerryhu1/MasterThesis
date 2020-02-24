@@ -1,0 +1,13 @@
+{
+    "SYSTEM" : "MODEL",
+    "LEARNING_RATE" : 0.4,
+    "SELECTION_SIZE" : 50,
+    "RUNS" : 1,
+    "CROSSOVER" : "NONE",
+    "POPULATION_SIZE" : 1000,
+    "ELITISM_SIZE" : 50,
+    "CROSSOVER_POPULATION" : 500,
+    "MODEL_POPULATION" : 500,
+    "FILE_PREFIX" : "model-learning-rate-0.4",
+    "ITERATIONS" : 300
+}

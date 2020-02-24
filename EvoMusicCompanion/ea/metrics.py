@@ -12,10 +12,9 @@ def get_path(prefix, file_format=None):
     if file_format is None:
         file_format = '.csv'
     metric = constants.FILE_PREFIX
-    value = constants.METRIC_VALUE
 
     folder = f'./output/{constants.SYSTEM}/{prefix}-experiment-{metric}'
-    file = f'/{prefix}-experiment-{datetime.datetime.now().date()}-{metric}={value}{file_format}'
+    file = f'/{prefix}-experiment-{datetime.datetime.now().date()}-{metric}{file_format}'
     return folder, file
 
 

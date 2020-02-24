@@ -2,7 +2,7 @@ from math import ceil
 import time
 from ea.simulation import Simulation, constants
 import os
-
+import json
 
 if __name__ == '__main__':
     #pitch_matrix = pd.read_csv('piano_man.csv', index_col=0)
@@ -10,21 +10,21 @@ if __name__ == '__main__':
     duration_matrix = None
     pitch_matrix = None
 
-    constants.LEARNING_RATE = float(os.environ.get('LEARNING_RATE'))
-    constants.SYSTEM = os.environ.get('SYSTEM')
-    constants.SELECTION_SIZE = int(os.environ.get('SELECTION_SIZE'))
-    constants.RUN_MODE = "MULTIPLE"
-    constants.METRIC_MODE = "MULTIPLE"  # ALL
-    constants.CROSSOVER = os.environ.get('CROSSOVER')
-    constants.POPULATION_SIZE = int(os.environ.get('POPULATION_SIZE'))
-    constants.ELITISM_SIZE = int(os.environ.get('ELITISM_SIZE'))
-    constants.CROSSOVER_POPULATION = int(os.environ.get('CROSSOVER_POPULATION'))
-    constants.MODEL_POPULATION = int(os.environ.get('MODEL_POPULATION'))
-    constants.FILE_PREFIX = os.environ.get('FILE_PREFIX')
-    constants.METRIC_VALUE = os.environ.get('METRIC_VALUE')
-    constants.ITERATIONS = int(os.environ.get('ITERATIONS'))
-
-    runs = int(os.environ.get('RUNS'))
+    with open("settings.json", "r") as settings:
+        data = json.load(settings)
+        constants.LEARNING_RATE = data['LEARNING_RATE']
+        constants.SYSTEM = data['SYSTEM']
+        constants.SELECTION_SIZE = data['SELECTION_SIZE']
+        constants.RUN_MODE = "MULTIPLE"
+        constants.METRIC_MODE = "MULTIPLE"  # ALL
+        constants.CROSSOVER = data['CROSSOVER']
+        constants.POPULATION_SIZE = data['POPULATION_SIZE']
+        constants.ELITISM_SIZE = data['ELITISM_SIZE']
+        constants.CROSSOVER_POPULATION = data['CROSSOVER_POPULATION']
+        constants.MODEL_POPULATION = data['MODEL_POPULATION']
+        constants.FILE_PREFIX = data['FILE_PREFIX']
+        constants.ITERATIONS = data['ITERATIONS']
+        runs = data['RUNS']
 
     print("Running experiment: GA 1X+2X 15 runs \n")
     print(f"Mode: {constants.RUN_MODE}")
