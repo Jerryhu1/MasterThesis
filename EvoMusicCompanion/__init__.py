@@ -3,8 +3,16 @@ import time
 from ea.simulation import Simulation, constants
 import os
 import json
+import argparse
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Start an experiment')
+    parser.add_argument('--name', metavar='name', required=True, help='Name of the experiment')
+    parser.add_argument('--settings', metavar='path', required=False, help='Path to the setting.json')
+
+    args = parser.parse_args()
+
     #pitch_matrix = pd.read_csv('piano_man.csv', index_col=0)
     #duration_matrix = pd.read_csv('piano_man_duration.csv', index_col=0)
     duration_matrix = None
@@ -24,9 +32,10 @@ if __name__ == '__main__':
         constants.MODEL_POPULATION = data['MODEL_POPULATION']
         constants.FILE_PREFIX = data['FILE_PREFIX']
         constants.ITERATIONS = data['ITERATIONS']
+        constants.NUM_OF_MEASURES = data['MEASURES']
         runs = data['RUNS']
 
-    print("Running experiment: GA 1X+2X 15 runs \n")
+    print(f"Running experiment: {args.name} \n")
     print(f"Mode: {constants.RUN_MODE}")
     print(f"Metric mode: {constants.METRIC_MODE}")
 

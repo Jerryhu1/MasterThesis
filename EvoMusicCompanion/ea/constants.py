@@ -1,6 +1,6 @@
 from math import ceil
 
-NUM_OF_MEASURES = 4
+NUM_OF_MEASURES = 8
 N_GRAM = 'trigram'
 LEARNING_RATE = 0.4
 POPULATION_SIZE = 100

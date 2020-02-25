@@ -30,8 +30,8 @@ def initialize_population(population_size) -> [Individual]:
                 measure_notes = get_notes_by_duration_trigram(measure_durations, prev_measure)
             m = Measure(measure_notes, 0, None)
             measures.append(m)
-        new_individual = individual.Individual(measures=measures, fitness=0)
 
+        new_individual = individual.Individual(measures=measures, fitness=0)
         population.append(new_individual)
     # Assign chords to each individual and set fitness
     population = set_chords_for_population(population)

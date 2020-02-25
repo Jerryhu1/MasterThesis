@@ -1,6 +1,5 @@
 from collections import defaultdict
 
-import collections
 import numpy as np
 import pandas as pd
 import os.path
@@ -161,14 +160,6 @@ def get_pitches_per_score(scores):
     return all_notes_per_score
 
 
-def create_frequency_array(notes):
-    # Get frequency array
-    counter = collections.Counter(flatten(notes))
-    # Initial note counter
-    counter[' '] = len(notes)
-    return counter
-
-
 def create_frequency_matrix(pieces, possible_notes):
     """
         Creates the frequency matrix, pieces must be supplied as multi dimensional array of notes, each
@@ -239,84 +230,3 @@ def train_duration_matrix(scores):
     matrix = get_probabilistic_matrix(matrix)
     matrix.to_csv(duration_matrix_path)
     return matrix
-
-
-def train_interval_matrix(scores):
-    first_notes_per_bar = []
-    all_intervals = []
-    for s in scores:
-        noteIterator = s.parts[0].getElementsByClass(stream.Measure)
-        if len(noteIterator) == 0:
-            noteIterator = s.parts[0].notesAndRests.stream()
-        for i in noteIterator:
-            firstNote = None
-            counter = 1
-            m = []
-            for j in i.notesAndRests:
-                if j.isChord:
-                    curr_note = note.Note(j.root())
-                elif j.isRest:
-                    m.append('REST')
-                    continue
-                else:
-                    curr_note = j
-                if counter == 1:
-                    if j.isChord:
-                        firstNote = note.Note(j.root())
-                    else:
-                        firstNote = j
-                    pitch_name = firstNote.nameWithOctave
-                    if '-' in pitch_name or '##' in pitch_name:
-                        pitch_name = firstNote.pitch.getEnharmonic().nameWithOctave
-                    if pitch_name in constants.NOTE_RANGE:
-                        first_notes_per_bar.append(pitch_name)
-                    counter += 1
-                    continue
-                octave = curr_note.octave
-                root = note.Note('C')
-                root.octave = octave
-                interv = interval.Interval(root,  curr_note).name
-                m.append(interv)
-                counter += 1
-            all_intervals.append(interv)
-
-    bigrams = list(nltk.bigrams(all_intervals))
-    matrix = defaultdict(lambda: defaultdict(lambda: 0))
-
-    for i1,i2 in bigrams:
-        matrix[i1][i2] += 1
-
-    for i1 in matrix:
-        total = float(sum(matrix[i1].values()))
-        for i2 in matrix[i1]:
-            matrix[i1][i2] /= total
-
-    int_matrix = pd.DataFrame(matrix)
-    int_matrix = int_matrix.fillna(0)
-    return int_matrix
-
-
-def update_matrix(samples, matrix, convergence_rate):
-    if constants.N_GRAM == 'trigram':
-        n_matrix = get_trigram_matrix(flatten(samples))
-    else:
-        n_matrix = get_bigram_matrix(flatten(samples))
-
-    u_matrix = get_probabilistic_matrix(n_matrix)
-    new_matrix = matrix.copy()
-
-    for i in new_matrix.keys():
-        for j in new_matrix.keys():
-            if i in u_matrix and j in u_matrix[i]:
-                # u_matrix contains the values, subtract from each other
-                difference = u_matrix[i][j] - matrix[i][j]
-            elif i not in u_matrix:
-                # u_matrix does not contain the column, set count to 1 (laplace smoothing)
-                difference = 1/constants.POPULATION_SIZE
-            else:  # u_matrix contains the column, but not the row. So no transitions to that note at all
-                difference = -matrix[i][j]
-
-            new_matrix[i][j] = matrix[i][j] + (difference * convergence_rate)
-
-    return new_matrix
-

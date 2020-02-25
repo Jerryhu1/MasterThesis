@@ -24,6 +24,9 @@ def update_matrix(individuals, matrix, backoff=False):
     n_matrix = modelTrainer.get_probabilistic_matrix(n_matrix)
     update_matrices.append((n_matrix, constants.LEARNING_RATE))
 
+    if constants.LEARNING_RATE == 1.0:
+        return n_matrix
+
     for m in update_matrices:
         u_matrix = m[0]
         learning_rate = m[1]
@@ -34,7 +37,7 @@ def update_matrix(individuals, matrix, backoff=False):
                     difference = u_matrix[i][j] - matrix[i][j]
                 elif i not in u_matrix:
                     # u_matrix does not contain the column, we can not update transitions strating from this note
-                    difference = 0.0
+                    difference = 1/len(matrix.values) - matrix[i][j]# laplace smoothing
                 else:  # u_matrix contains the column, but not the row. So no transitions to that note at all
                     difference = -matrix[i][j]
 

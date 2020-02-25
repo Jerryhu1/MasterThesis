@@ -7,6 +7,7 @@ import random
 import time
 import sys
 
+
 class Simulation:
     pitch_matrix = None
     backoff_matrix = None
@@ -25,11 +26,9 @@ class Simulation:
     def run(self, pitch_matrix, duration_matrix, backoff_matrix):
         print('Starting generation')
         if pitch_matrix is None:
-            print('Training the pitch matrix, this might take a while')
             self.pitch_matrix = modelTrainer.train_pitch_matrix(None)
 
         if duration_matrix is None:
-            print('Training the duration matrix, this might take a while')
             self.duration_matrix = modelTrainer.train_duration_matrix(None)
 
         if backoff_matrix is None:
@@ -63,10 +62,9 @@ class Simulation:
                     else:
                         next_generation.extend(crossover_generation)
 
-
             if constants.SYSTEM == "MODEL" or constants.SYSTEM == "HYBRID":
                 # Elitism
-                next_generation.extend(self.elitist_population)
+                #next_generation.extend(self.elitist_population)
                 sel = self.population[0:constants.SELECTION_SIZE]
                 if constants.LEARNING_RATE != 0.0:
                     self.update_matrices(sel)
@@ -74,9 +72,7 @@ class Simulation:
                 next_generation.extend(initialisation.initialize_population(constants.MODEL_POPULATION))
             else:
                 next_generation.extend(
-                        initialisation.initialize_population(constants.POPULATION_SIZE))
-
-
+                    initialisation.initialize_population(constants.POPULATION_SIZE))
 
             next_generation.sort(key=lambda x: x.fitness, reverse=True)
             next_generation = next_generation[0:constants.POPULATION_SIZE]
@@ -99,32 +95,30 @@ class Simulation:
                 converged_counter = 0
             if converged_counter > 10:
                 print('Population is converged, stopping')
-                converged_iteration = i-10
+                converged_iteration = i - 10
                 break
 
             sys.stdout.flush()
-            # print(f"Average fitness: {avg_fitness}")
-            # print(f"Max fitness: {max(fitnesses)}")
-            # print(f"Min fitness: {min(fitnesses)}")
-            # print(f"Population size: {len(self.population)}")
-            # print(f"Proportion of equal individuals: {metrics.proportion_equal_to_highest_fitness(self.population)}")
-        print('-------------------------------------------------')
-        print('Done evolving, playing songs')
-        print(f'Population size: {constants.POPULATION_SIZE}')
-        print(f'Elitist population size: {len(self.elitist_population)}')
-        print(f'Tournament size: {constants.TOURNAMENT_SIZE}')
-        print(f'Iterations: {constants.ITERATIONS}')
-        print(f'Model updating: None, ratio = N/A')
-        play_pieces = [self.population[0], self.population[ceil(len(self.population) / 2)], self.population[-1]]
+
         self.population.sort(key=lambda x: x.fitness, reverse=True)
         if constants.RUN_MODE == 'MULTIPLE':
             metrics.write_average_runs(converged_iteration, self.population)
-
         if constants.SYSTEM != 'GA':
             metrics.write_matrices(self.pitch_matrix, self.backoff_matrix, self.duration_matrix)
-        musicPlayer.write_music_midi(play_pieces)
-        sys.stdout.flush()
 
+        play_pieces = [self.population[0], self.population[ceil(len(self.population) / 2)], self.population[-1]]
+        musicPlayer.write_music_midi(play_pieces)
+
+        if constants.RUN_MODE == "SINGLE":
+            print('-------------------------------------------------')
+            print('Done evolving, playing songs')
+            print(f'Population size: {constants.POPULATION_SIZE}')
+            print(f'Elitist population size: {len(self.elitist_population)}')
+            print(f'Tournament size: {constants.TOURNAMENT_SIZE}')
+            print(f'Iterations: {constants.ITERATIONS}')
+            print(f'Model updating: None, ratio = N/A')
+
+        sys.stdout.flush()
 
     def crossover_mutation(self):
         next_generation = []
