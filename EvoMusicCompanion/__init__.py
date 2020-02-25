@@ -31,7 +31,6 @@ if __name__ == '__main__':
     print(f"Metric mode: {constants.METRIC_MODE}")
 
     for r in range(runs):
-        start = time.time()
         print(f"System: {constants.SYSTEM}")
         print(f"Elitism size: {constants.ELITISM_SIZE}")
         if constants.SYSTEM == "GA" or constants.SYSTEM == "HYBRID":
@@ -45,8 +44,6 @@ if __name__ == '__main__':
 
         sim = Simulation(duration_matrix, pitch_matrix)
         sim.run(pitch_matrix, duration_matrix, None)
-        end = time.time()
-        print(f'Single run time: {end - start}')
 
     #app = QApplication(sys.argv)
     #ex = Main()

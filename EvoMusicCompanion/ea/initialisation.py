@@ -47,13 +47,12 @@ def random_sample(transitions):
     r = rng.random()
     p_sum = 0.0
     for k, v in transitions.iteritems():
-        try:
-            if p_sum < r < p_sum + v:
-                return k
-            else:
-                p_sum += v
-        except:
-            print('wt')
+        if p_sum < r < p_sum + v:
+            return k
+        else:
+            p_sum += v
+    print(f'P_sum = {p_sum}')
+
     return None
 
 
