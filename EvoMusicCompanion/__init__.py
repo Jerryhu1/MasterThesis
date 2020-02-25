@@ -36,12 +36,14 @@ if __name__ == '__main__':
         runs = data['RUNS']
 
     print(f"Running experiment: {args.name} \n")
+    print(f"Runs: {runs} \n")
     print(f"Mode: {constants.RUN_MODE}")
     print(f"Metric mode: {constants.METRIC_MODE}")
 
     for r in range(runs):
         print(f"System: {constants.SYSTEM}")
         print(f"Elitism size: {constants.ELITISM_SIZE}")
+        print(f"Run: {r}")
         if constants.SYSTEM == "GA" or constants.SYSTEM == "HYBRID":
             print(f"Crossover: {constants.CROSSOVER}")
         if constants.SYSTEM == "MODEL" or constants.SYSTEM == "HYBRID":
