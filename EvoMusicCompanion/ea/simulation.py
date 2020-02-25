@@ -45,7 +45,6 @@ class Simulation:
         converged_iteration = -1
 
         for i in range(constants.ITERATIONS):
-            start = time.time()
             self.population.sort(key=lambda x: x.fitness, reverse=True)
             self.elitist_population = self.population[0:constants.ELITISM_SIZE]
 
@@ -103,8 +102,6 @@ class Simulation:
                 converged_iteration = i-10
                 break
 
-            end = time.time()
-            print(f'Iteration time: {end-start}')
             sys.stdout.flush()
             # print(f"Average fitness: {avg_fitness}")
             # print(f"Max fitness: {max(fitnesses)}")
