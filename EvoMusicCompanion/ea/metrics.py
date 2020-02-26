@@ -96,6 +96,7 @@ def write_average_runs(converge_it, population: [Individual]):
     avg_fitness = sum(fitnesses) / len(population)
     max_fitness = max(fitnesses)
     min_fitness = min(fitnesses)
+    med_fitness = median(fitnesses)
 
     c_tone = sum(list(map(lambda x: x.fitnesses['C_TONE'], population))) / len(population)
     c_tone_b = sum(list(map(lambda x: x.fitnesses['C_TONE_B'], population))) / len(population)
@@ -116,6 +117,7 @@ def write_average_runs(converge_it, population: [Individual]):
         max_fitness,
         min_fitness,
         avg_fitness,
+        med_fitness,
         c_tone,
         c_tone_b,
         cadence,
@@ -136,7 +138,7 @@ def write_average_runs(converge_it, population: [Individual]):
         constants.SELECTION_SIZE
     ]
 
-    header = ["I", "I_CONV", "MAX_F", "MIN_F", "MEAN_F", "C_TONE", "C_TONE_B", "CADENCE", "L_NOTE", "I_RES", "L_INT", "L_DUR",
+    header = ["I", "I_CONV", "MAX_F", "MIN_F", "MEAN_F", "MEDIAN_F", "C_TONE", "C_TONE_B", "CADENCE", "L_NOTE", "I_RES", "L_INT", "L_DUR",
               "CONS_R", "CONS_N", "PATTERN_D", "PATTERN_SD", "EQ_INDIV", "INDIV_SIZE", "L_RATE", "POP_SIZE", "E_SIZE", "X_TYPE", "SEL_SIZE"]
 
     folder, file = get_path('MULTIPLE')

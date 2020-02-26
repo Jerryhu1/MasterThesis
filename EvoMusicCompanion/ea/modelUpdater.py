@@ -37,7 +37,7 @@ def update_matrix(individuals, matrix, backoff=False):
                     difference = u_matrix[i][j] - matrix[i][j]
                 elif i not in u_matrix:
                     # u_matrix does not contain the column, we can not update transitions strating from this note
-                    difference = 1/len(matrix.values) - matrix[i][j]# laplace smoothing
+                    difference = 0
                 else:  # u_matrix contains the column, but not the row. So no transitions to that note at all
                     difference = -matrix[i][j]
 
