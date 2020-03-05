@@ -30,15 +30,18 @@ def update_matrix(individuals, matrix, backoff=False):
     for m in update_matrices:
         u_matrix = m[0]
         learning_rate = m[1]
+
         for i in matrix.keys():
             for j in matrix[i].keys():
-                if i in u_matrix and j in u_matrix[i]:
+                key_in = i in u_matrix
+                value_in = j in u_matrix[i]
+                if key_in and value_in:
                     # u_matrix contains the values, subtract from each other
                     difference = u_matrix[i][j] - matrix[i][j]
-                elif i not in u_matrix:
-                    # u_matrix does not contain the column, we can not update transitions strating from this note
+                elif not key_in:
+                    # u_matrix does not contain the column, we can not update transitions starting from this note
                     difference = 0
-                else:  # u_matrix contains the column, but not the row. So no transitions to that note at all
+                else:  # u_matrix contains the column, but not the row. So no transitions to that note at all p=0
                     difference = -matrix[i][j]
 
                 matrix[i][j] = matrix[i][j] + (difference * learning_rate)

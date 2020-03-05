@@ -1,13 +1,15 @@
 {
-    "SYSTEM" : "MODEL",
-    "LEARNING_RATE" : 0.4,
+    "SYSTEM" : "HYBRID",
+    "LEARNING_RATE" : 0.5,
     "SELECTION_SIZE" : 50,
-    "RUNS" : 1,
-    "CROSSOVER" : "NONE",
+    "RUNS" : 5,
+    "CROSSOVER" : "1X+2X",
     "POPULATION_SIZE" : 1000,
     "ELITISM_SIZE" : 50,
-    "CROSSOVER_POPULATION" : 500,
-    "MODEL_POPULATION" : 500,
-    "FILE_PREFIX" : "model-learning-rate-0.4",
-    "ITERATIONS" : 300
+    "CROSSOVER_POPULATION" : 750,
+    "MODEL_POPULATION" : 250,
+    "FILE_PREFIX" : "HYBRID-nga=750-nmodel=250-elitism",
+    "ITERATIONS" : 500,
+    "MEASURES" : 8
+
 }

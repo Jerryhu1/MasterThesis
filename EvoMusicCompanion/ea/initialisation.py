@@ -51,9 +51,8 @@ def random_sample(transitions):
             return k
         else:
             p_sum += v
-    print(f'P_sum = {p_sum}')
-
-    return None
+    print(f'P_sum = {p_sum}, trying again')
+    return random_sample(transitions)
 
 
 def get_random_pitch_transition(start):
@@ -74,6 +73,8 @@ def get_random_transition(matrix, start, backoff_matrix=None):
 
     if sample is None:
         print(f'Cumulative P of {start} does not add up to 1.0')
+        for k, v in transitions.iteritems():
+            print(f'From {start} to {k}: P = {v}')
 
     return sample
 

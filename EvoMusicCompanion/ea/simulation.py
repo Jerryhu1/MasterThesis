@@ -64,7 +64,7 @@ class Simulation:
 
             if constants.SYSTEM == "MODEL" or constants.SYSTEM == "HYBRID":
                 # Elitism
-                #next_generation.extend(self.elitist_population)
+                next_generation.extend(self.elitist_population)
                 sel = self.population[0:constants.SELECTION_SIZE]
                 if constants.LEARNING_RATE != 0.0:
                     self.update_matrices(sel)
