@@ -33,12 +33,10 @@ def update_matrix(individuals, matrix, backoff=False):
 
         for i in matrix.keys():
             for j in matrix[i].keys():
-                key_in = i in u_matrix
-                value_in = j in u_matrix[i]
-                if key_in and value_in:
+                if i in u_matrix and j in u_matrix[i]:
                     # u_matrix contains the values, subtract from each other
                     difference = u_matrix[i][j] - matrix[i][j]
-                elif not key_in:
+                elif not i in u_matrix:
                     # u_matrix does not contain the column, we can not update transitions starting from this note
                     difference = 0
                 else:  # u_matrix contains the column, but not the row. So no transitions to that note at all p=0
