@@ -2,7 +2,7 @@
     "SYSTEM" : "HYBRID",
     "LEARNING_RATE" : 0.5,
     "SELECTION_SIZE" : 50,
-    "RUNS" : 5,
+    "RUNS" : 8,
     "CROSSOVER" : "1X+2X",
     "POPULATION_SIZE" : 1000,
     "ELITISM_SIZE" : 50,
