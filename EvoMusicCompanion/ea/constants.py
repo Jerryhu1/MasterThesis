@@ -17,6 +17,7 @@ METRIC_MODE = "POPULATION"
 
 FILE_PREFIX = "NO_PREFIX_GIVEN"
 METRIC_VALUE = -1
+OBJECTIVE = 'TARGET' # MAX
 
 def flatten(l):
     return [item for sublist in l for item in sublist]
@@ -68,8 +69,6 @@ C_MAJOR_SCALE = [
     'C6',
 ]
 
-
-
 DURATION_BLOCKS = [
     [0.25, 0.25, 0.25, 0.25],
     [0.25, 0.25, 0.5],
@@ -91,3 +90,17 @@ USER_RATINGS = [
     "Bad",
     "Very bad"
 ]
+
+SUBRATER_TARGET_VALUE = {
+    'C_TONE': 0.2,
+    'C_TONE_B': 0.5,
+    'CADENCE': 0.0,
+    'L_NOTE': 0.0,
+    'I_RES': 0.3,
+    'L_INT': 0.0,
+    'L_DUR': 0.2,
+    'CONS_R': 0.0,
+    'CONS_N': 0.5,
+    'PATTERN_D': 0.3,
+    'PATTERN_SD': 0.5
+}

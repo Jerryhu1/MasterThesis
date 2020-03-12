@@ -20,6 +20,7 @@ if __name__ == '__main__':
 
     with open("settings.json", "r") as settings:
         data = json.load(settings)
+        print(data)
         constants.LEARNING_RATE = data['LEARNING_RATE']
         constants.SYSTEM = data['SYSTEM']
         constants.SELECTION_SIZE = data['SELECTION_SIZE']
@@ -33,6 +34,7 @@ if __name__ == '__main__':
         constants.FILE_PREFIX = data['FILE_PREFIX']
         constants.ITERATIONS = data['ITERATIONS']
         constants.NUM_OF_MEASURES = data['MEASURES']
+        constants.SUBRATER_TARGET_VALUE = data['SUBRATER_TARGET_VALUE']
         runs = data['RUNS']
 
     print(f"Running experiment: {args.name} \n")

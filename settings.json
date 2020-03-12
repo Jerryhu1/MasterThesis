@@ -1,15 +1,27 @@
 {
-    "SYSTEM" : "HYBRID",
+    "SYSTEM" : "GA",
     "LEARNING_RATE" : 0.5,
     "SELECTION_SIZE" : 50,
-    "RUNS" : 8,
+    "RUNS" : 1,
     "CROSSOVER" : "1X+2X",
     "POPULATION_SIZE" : 1000,
-    "ELITISM_SIZE" : 50,
+    "ELITISM_SIZE" : 5,
     "CROSSOVER_POPULATION" : 750,
     "MODEL_POPULATION" : 250,
-    "FILE_PREFIX" : "HYBRID-nga=750-nmodel=250-elitism",
-    "ITERATIONS" : 500,
-    "MEASURES" : 8
-
+    "FILE_PREFIX" : "TARGET-TEST",
+    "ITERATIONS" : 200,
+    "MEASURES" : 8,
+    "SUBRATER_TARGET_VALUE": {
+      "C_TONE": 0.2,
+      "C_TONE_B": 0.5,
+      "CADENCE": 0.0,
+      "L_NOTE": 0.0,
+      "I_RES": 0.3,
+      "L_INT": 0.0,
+      "L_DUR": 0.2,
+      "CONS_R": 0.0,
+      "CONS_N": 0.5,
+      "PATTERN_D": 0.3,
+      "PATTERN_SD": 0.5
+    }
 }

@@ -1,13 +1,11 @@
 import collections
 
-from music21 import pitch, interval, scale
+from music21 import pitch, interval
 
 from ea import util, constants
 from ea.individual import Individual, Note
 from nltk import ngrams
 import math
-import time
-import threading
 
 major_scale = ['A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5']
 
@@ -51,6 +49,15 @@ w7 = 1.0
 w8 = 1.0
 
 
+def get_subrater_difference(individual):
+    diff = {key: abs(individual.fitnesses[key] -
+                 constants.SUBRATER_TARGET_VALUE[key]) for key in individual.fitnesses}
+
+    diff_sum = sum(diff.values())
+
+    return diff_sum
+
+
 def get_fitness(individual):
     int_pattern = intervallic_patterns(individual)
     duration = duration_patterns(individual)
@@ -65,7 +72,7 @@ def get_fitness(individual):
     consecutive_notes = similar_notes(individual)
 
     dic = {
-        "C_TONE" : chord_tone,
+        "C_TONE": chord_tone,
         "C_TONE_B": chord_tone_beat,
         "CADENCE": last_note,
         "L_NOTE": long_note,
@@ -79,12 +86,17 @@ def get_fitness(individual):
     }
 
     return (int_pattern + chord_tone + chord_tone_beat + last_note + long_note + duration + intervals + rests + \
-           interval_resolution + duration_change + consecutive_notes), dic
+            interval_resolution + duration_change + consecutive_notes), dic
+
 
 def set_fitness(individual):
     f, dic = get_fitness(individual)
-    individual.fitness = f
     individual.fitnesses = dic
+
+    if constants.OBJECTIVE == 'TARGET':
+        individual.fitness = get_subrater_difference(individual)
+    else:
+        individual.fitness = f
 
 
 def set_fitness_for_population(population: [Individual]):
@@ -95,7 +107,7 @@ def set_fitness_for_population(population: [Individual]):
 
 def get_distance(i1: Individual, i2: Individual):
     dic = {
-        "C_TONE" : 0.0,
+        "C_TONE": 0.0,
         "C_TONE_B": 0.0,
         "CADENCE": 0.0,
         "L_NOTE": 0.0,
@@ -243,9 +255,9 @@ def fitness_chord_tone_beat(individual: Individual):
     # 2 strong beats per measure
     if score == 0.0:
         return 0.0
-    if score / (2*len(individual.measures)) == 1.0 and individual.measures[0].notes[0].pitch == 'REST':
+    if score / (2 * len(individual.measures)) == 1.0 and individual.measures[0].notes[0].pitch == 'REST':
         print('Rest in chord tone')
-    return score / (2*len(individual.measures))
+    return score / (2 * len(individual.measures))
 
 
 def fitness_chord_tone(individual: Individual):
@@ -347,7 +359,7 @@ def similar_notes(individual: Individual):
     for m in notes_per_measure:
         consecutive_notes_count = 0
         prev_note = m[0].pitch
-        for i in range(1,len(m)):
+        for i in range(1, len(m)):
             curr_note = m[i].pitch
             if prev_note == curr_note:
                 consecutive_notes_count += 1

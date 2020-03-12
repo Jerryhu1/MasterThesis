@@ -44,7 +44,7 @@ class Simulation:
         converged_iteration = -1
 
         for i in range(constants.ITERATIONS):
-            self.population.sort(key=lambda x: x.fitness, reverse=True)
+            self.population.sort(key=lambda x: x.fitness)
             self.elitist_population = self.population[0:constants.ELITISM_SIZE]
 
             next_generation = []
@@ -56,7 +56,7 @@ class Simulation:
                     next_generation.extend(self.population)
                 else:
                     crossover_generation = self.crossover_mutation()
-                    crossover_generation.sort(key=lambda x: x.fitness, reverse=True)
+                    crossover_generation.sort(key=lambda x: x.fitness)
                     if constants.SYSTEM == "HYBRID":
                         next_generation.extend(crossover_generation[0:constants.CROSSOVER_POPULATION])
                     else:
@@ -74,33 +74,28 @@ class Simulation:
                 next_generation.extend(
                     initialisation.initialize_population(constants.POPULATION_SIZE))
 
-            next_generation.sort(key=lambda x: x.fitness, reverse=True)
+            next_generation.sort(key=lambda x: x.fitness)
             next_generation = next_generation[0:constants.POPULATION_SIZE]
 
             self.population = next_generation
 
             # Metrics
+            print(f'Highest fitness: {self.population[0].fitness}')
+
             if constants.SYSTEM is not "MULTIPLE" and constants.METRIC_MODE is not "ALL":
                 metrics.write_population_metrics(i, self.population)
-
-            if i % 25 == 0:
-                print(f"Iteration {i} done")
 
             if constants.METRIC_MODE == "ALL":
                 metrics.write_individual_metrics(i, population=self.population)
 
-            if metrics.converged(self.population):
-                converged_counter += 1
-            else:
-                converged_counter = 0
-            if converged_counter > 10:
-                print('Population is converged, stopping')
-                converged_iteration = i - 10
-                break
+            if i % 25 == 0:
+                print(f"Iteration {i} done")
+
 
             sys.stdout.flush()
+        self.population.sort(key=lambda x: x.fitness)
 
-        self.population.sort(key=lambda x: x.fitness, reverse=True)
+
         if constants.RUN_MODE == 'MULTIPLE':
             metrics.write_average_runs(converged_iteration, self.population)
         if constants.SYSTEM != 'GA':
@@ -133,7 +128,7 @@ class Simulation:
             fitness.set_fitness(c1)
             fitness.set_fitness(c2)
             family.extend([c1, c2, p1, p2])
-            family.sort(key=lambda x: x.fitness, reverse=True)
+            family.sort(key=lambda x: x.fitness)
             next_generation.extend(family[0:2])
         return next_generation
 
