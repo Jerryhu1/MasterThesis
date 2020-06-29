@@ -1,1 +1,0 @@
-worker: python ./EvoMusicCompanion/__init__.py
